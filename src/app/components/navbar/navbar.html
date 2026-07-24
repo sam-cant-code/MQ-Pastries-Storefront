@@ -1,0 +1,27 @@
+<nav [ngClass]="isLightMode() ? 'bg-espresso-900 shadow-md' : 'bg-transparent'" class="absolute top-0 w-full z-50 px-6 lg:px-16 py-6 transition-all duration-300 flex justify-between items-center text-cream-50">
+  <div class="flex flex-1 items-center gap-4 cursor-pointer group" (click)="goHome()">
+    <img src="/logo.png" alt="MQ Pastries" class="w-14 h-14 rounded-full border border-cream-50/30 group-hover:border-caramel-400 transition-colors object-cover bg-white shadow-md">
+    <div class="text-3xl font-serif tracking-widest uppercase group-hover:text-caramel-400 transition-colors">
+      MQ Pastries
+    </div>
+  </div>
+  <ul class="hidden md:flex gap-10 text-sm font-medium tracking-widest uppercase items-center justify-center flex-none">
+    <li><a (click)="goHome('#home')" class="hover:text-caramel-400 cursor-pointer transition-colors border-b-2 border-transparent hover:border-caramel-400 pb-1">Home</a></li>
+    <li><a (click)="goHome('#menu')" class="hover:text-caramel-400 cursor-pointer transition-colors border-b-2 border-transparent hover:border-caramel-400 pb-1">Menu</a></li>
+    <li><a (click)="goHome('#about')" class="hover:text-caramel-400 cursor-pointer transition-colors border-b-2 border-transparent hover:border-caramel-400 pb-1">About</a></li>
+    <li><a (click)="goHome('#contact')" class="hover:text-caramel-400 cursor-pointer transition-colors border-b-2 border-transparent hover:border-caramel-400 pb-1">Contact</a></li>
+  </ul>
+  <div class="flex flex-1 justify-end items-center gap-6">
+    <button (click)="cartService.openCart()" class="relative flex items-center gap-2 bg-caramel-600 hover:bg-caramel-500 text-white px-5 py-3 rounded-full font-semibold transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+      </svg>
+      <span class="text-sm tracking-wider uppercase">Cart</span>
+      @if (cartService.totalItems() > 0) {
+        <span class="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold w-6 h-6 flex items-center justify-center rounded-full border-2 border-white">
+          {{ cartService.totalItems() }}
+        </span>
+      }
+    </button>
+  </div>
+</nav>

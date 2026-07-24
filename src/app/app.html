@@ -1,0 +1,16 @@
+<main class="relative bg-cream-50 min-h-screen text-charcoal">
+  <app-navbar></app-navbar>
+  <router-outlet></router-outlet>
+  <app-footer></app-footer>
+</main>
+
+<app-cart-slider></app-cart-slider>
+
+@if (cartService.toastMessage()) {
+  <div class="fixed bottom-6 right-6 bg-charcoal text-cream-50 px-6 py-4 rounded-lg shadow-2xl flex items-center gap-4 z-[60] transition-all duration-300 transform translate-y-0 opacity-100">
+    <span>{{ cartService.toastMessage()?.message }}</span>
+    <button (click)="cartService.openCart(); cartService.toastMessage.set(null)" class="text-caramel-400 font-bold hover:text-caramel-300 transition-colors uppercase tracking-wider text-xs ml-4 border-l border-cream-50/20 pl-4">
+      {{ cartService.toastMessage()?.action }}
+    </button>
+  </div>
+}

@@ -1,0 +1,24 @@
+<section class="py-24 px-6 lg:px-16 bg-cream-50">
+  <div class="max-w-7xl mx-auto">
+    <div class="text-center mb-16">
+      <h2 class="text-xs tracking-[0.2em] text-caramel-500 uppercase font-semibold mb-4">Our Masterpieces</h2>
+      <h3 class="text-4xl md:text-5xl font-serif text-espresso-900">Signature Pastries</h3>
+      <div class="w-16 h-[1px] bg-caramel-400 mx-auto mt-8"></div>
+    </div>
+    
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
+      <app-pastry-card *ngFor="let pastry of pastries"
+        [name]="pastry.name"
+        [description]="pastry.description"
+        [price]="pastry.price"
+        [image]="pastry.image">
+      </app-pastry-card>
+    </div>
+    
+    <div class="text-center mt-16">
+      <button class="uppercase tracking-widest text-xs font-semibold px-10 py-4 border border-espresso-900 text-espresso-900 hover:bg-espresso-900 hover:text-cream-50 transition-colors duration-300">
+        View Full Menu
+      </button>
+    </div>
+  </div>
+</section>

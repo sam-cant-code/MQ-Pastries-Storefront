@@ -1,0 +1,18 @@
+<section id="home" class="relative h-[90vh] w-full flex items-center justify-center text-center overflow-hidden">
+  <div class="absolute inset-0 z-0">
+    <img src="/hero_pastry.jpg" alt="Artisan Pastries" class="w-full h-full object-cover brightness-[0.55] transform hover:scale-105 transition-transform duration-[20s] ease-out" />
+  </div>
+  <div class="relative z-10 px-6 flex flex-col items-center mt-20">
+    <h1 class="text-5xl md:text-7xl lg:text-8xl text-cream-50 font-serif mb-8 drop-shadow-2xl max-w-5xl leading-tight">
+      100% Homemade.<br/>Baked Fresh Every Morning.
+    </h1>
+    <p class="text-lg md:text-xl text-cream-100 max-w-2xl mb-12 font-light tracking-wider drop-shadow-md">
+      Experience the authentic taste of home. Crafted with love, zero preservatives, and premium ingredients in every bite.
+    </p>
+    <div class="flex gap-6 flex-col sm:flex-row">
+      <a (click)="scrollToMenu($event)" class="px-10 py-4 bg-caramel-500 hover:bg-caramel-600 text-cream-50 text-xs font-semibold tracking-widest uppercase cursor-pointer transition-all duration-300 shadow-xl hover:shadow-2xl hover:-translate-y-1 inline-block">
+        Explore Our Menu
+      </a>
+    </div>
+  </div>
+</section>
