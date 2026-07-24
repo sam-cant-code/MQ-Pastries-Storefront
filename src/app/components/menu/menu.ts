@@ -4,7 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { category_list } from '../../data/assets';
 import { CartService } from '../../services/cart.service';
-import { environment } from '../../environments/environment';
+import { environment } from '../../../environments/environment';
 
 interface Product {
   id: string;

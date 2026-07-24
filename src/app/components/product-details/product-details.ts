@@ -3,8 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { CartService } from '../../services/cart.service';
-import { environment } from '../../environments/environment';
-
+import { environment } from '../../../environments/environment';
 interface Variant {
   name: string;
   price: number;

@@ -4,7 +4,7 @@ import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angula
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { CartService } from '../../services/cart.service';
-import { environment } from '../../environments/environment';
+import { environment } from '../../../environments/environment';
 
 declare var Razorpay: any;
 
