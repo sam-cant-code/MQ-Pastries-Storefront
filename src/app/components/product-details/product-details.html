@@ -105,24 +105,24 @@
       </div>
       
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-        <div *ngFor="let pastry of suggestedProducts()" (click)="goToProduct(pastry.id)" class="group cursor-pointer flex flex-col h-full bg-white shadow-sm hover:shadow-xl transition-shadow duration-300 rounded-sm overflow-hidden border border-cream-200">
+        <div *ngFor="let pastry of suggestedProducts()" (click)="goToProduct(pastry.sampleProductId)" class="group cursor-pointer flex flex-col h-full bg-white shadow-sm hover:shadow-xl transition-shadow duration-300 rounded-sm overflow-hidden border border-cream-200">
           
           <div class="relative h-64 w-full overflow-hidden bg-gradient-to-br from-cream-200 to-caramel-100">
             <div *ngIf="!pastry.image" class="absolute inset-0 flex items-center justify-center text-caramel-600/50">
               <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
             </div>
-            <img *ngIf="pastry.image" [src]="pastry.image" [alt]="pastry.name" class="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700 ease-out z-10 relative">
+            <img *ngIf="pastry.image" [src]="pastry.image" [alt]="pastry.groupName" class="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700 ease-out z-10 relative">
           </div>
 
           <div class="p-6 flex flex-col flex-grow">
             <p class="text-[10px] uppercase tracking-widest text-caramel-600 font-semibold mb-2">{{ pastry.category }}</p>
-            <h4 class="text-xl font-serif text-espresso-900 mb-2 group-hover:text-caramel-600 transition-colors">{{ pastry.groupName || pastry.name }}</h4>
-            <p class="text-sm text-gray-600 mb-6 flex-grow line-clamp-2">{{ pastry.description }}</p>
+            <h4 class="text-xl font-serif text-espresso-900 mb-2 group-hover:text-caramel-600 transition-colors">{{ pastry.groupName }}</h4>
+            <p class="text-sm text-gray-600 mb-6 flex-grow line-clamp-2">{{ pastry.flavorsCount }} Flavours Available<br><span class="text-xs text-gray-400">{{ pastry.flavors.join(' • ') }}</span></p>
             
             <div class="flex items-end justify-between mt-auto pt-4 border-t border-cream-200">
               <div class="text-lg font-semibold text-espresso-900 mb-1 flex items-baseline gap-1">
-                <span>₹{{ pastry.price }}</span>
-                <span class="text-xs text-gray-500 font-normal">/ {{ pastry.unit }}</span>
+                <span class="text-sm text-gray-500 mr-1">from</span>
+                <span>₹{{ pastry.minPrice }}</span>
               </div>
               <div class="flex items-center gap-2">
                 <span class="text-xs font-bold uppercase tracking-widest text-caramel-600 group-hover:text-espresso-900 transition-colors">

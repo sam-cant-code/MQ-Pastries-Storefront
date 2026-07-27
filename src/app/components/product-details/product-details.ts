@@ -24,6 +24,16 @@ interface Product {
   selectedVariant?: Variant;
 }
 
+interface ProductGroupCard {
+  groupName: string;
+  category: string;
+  image: string;
+  minPrice: number;
+  flavorsCount: number;
+  flavors: string[];
+  sampleProductId: string;
+}
+
 @Component({
   selector: 'app-product-details',
   standalone: true,
@@ -41,7 +51,7 @@ export class ProductDetails implements OnInit {
   selectedFlavor = signal<Product | null>(null);
   selectedMainImage = signal<string>('');
 
-  suggestedProducts = signal<Product[]>([]);
+  suggestedProducts = signal<ProductGroupCard[]>([]);
   modifyCartId = signal<string | null>(null);
 
   isEggless = signal(false);
@@ -105,17 +115,33 @@ export class ProductDetails implements OnInit {
   fetchSuggestedProducts(currentGroup: string) {
     this.http.get<Product[]>(`${environment.apiUrl}/public/products`).subscribe({
       next: (data) => {
-        const groupedMap = new Map<string, Product>();
-        data.forEach(p => {
-            const key = p.groupName || p.name;
-            if (!groupedMap.has(key)) {
-               groupedMap.set(key, p);
+          const groupedMap = new Map<string, Product[]>();
+          data.forEach(p => {
+              const key = p.groupName || p.name;
+              if (!groupedMap.has(key)) {
+                 groupedMap.set(key, []);
+              }
+              groupedMap.get(key)!.push(p);
+          });
+          
+          const cards: ProductGroupCard[] = [];
+          groupedMap.forEach((prods, key) => {
+            if (key !== currentGroup) {
+              const first = prods[0];
+              cards.push({
+                groupName: key,
+                category: first.category,
+                image: first.image,
+                minPrice: Math.min(...prods.map(p => p.price)),
+                flavorsCount: prods.length,
+                flavors: prods.map(p => p.name),
+                sampleProductId: first.id
+              });
             }
-        });
-        const allGroups = Array.from(groupedMap.values());
-        const others = allGroups.filter(p => (p.groupName || p.name) !== currentGroup);
-        const shuffled = others.sort(() => 0.5 - Math.random());
-        this.suggestedProducts.set(shuffled.slice(0, 4));
+          });
+          
+          const shuffled = cards.sort(() => 0.5 - Math.random());
+          this.suggestedProducts.set(shuffled.slice(0, 4));
       }
     });
   }

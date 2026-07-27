@@ -17,6 +17,16 @@ interface Product {
   groupName?: string;
 }
 
+interface ProductGroupCard {
+  groupName: string;
+  category: string;
+  image: string;
+  minPrice: number;
+  flavorsCount: number;
+  flavors: string[];
+  sampleProductId: string;
+}
+
 @Component({
   selector: 'app-menu',
   standalone: true,
@@ -27,8 +37,8 @@ export class Menu implements OnInit {
   private http = inject(HttpClient);
   private router = inject(Router);
   
-  categories = category_list;
-  pastries = signal<Product[]>([]);
+  categories = signal<{name: string}[]>([]);
+  pastries = signal<ProductGroupCard[]>([]);
   isLoading = signal(true);
   
   failedImages = new Set<string>();
@@ -45,16 +55,45 @@ export class Menu implements OnInit {
   });
 
   ngOnInit() {
+    // Fetch Categories
+    this.http.get<{name: string}[]>(`${environment.apiUrl}/public/categories`).subscribe({
+      next: (cats) => {
+        this.categories.set(cats);
+        if (cats.length > 0 && this.selectedCategory() === 'All') {
+          // Keep All or select first? Let's keep All
+        }
+      },
+      error: (err) => console.error('Failed to load categories', err)
+    });
+
+    // Fetch Products and group them
     this.http.get<Product[]>(`${environment.apiUrl}/public/products`).subscribe({
       next: (data) => {
-        const groupedMap = new Map<string, Product>();
+        // Only consider published products if status is available in public API (assuming backend filters it or we handle it here, we'll assume backend sends all or we don't have status here yet, wait, we can just group).
+        const groupedMap = new Map<string, Product[]>();
         data.forEach(p => {
             const key = p.groupName || p.name;
             if (!groupedMap.has(key)) {
-               groupedMap.set(key, p);
+               groupedMap.set(key, []);
             }
+            groupedMap.get(key)!.push(p);
         });
-        this.pastries.set(Array.from(groupedMap.values()));
+
+        const cards: ProductGroupCard[] = [];
+        groupedMap.forEach((prods, key) => {
+          const first = prods[0];
+          cards.push({
+            groupName: key,
+            category: first.category,
+            image: first.image,
+            minPrice: Math.min(...prods.map(p => p.price)),
+            flavorsCount: prods.length,
+            flavors: prods.map(p => p.name),
+            sampleProductId: first.id
+          });
+        });
+
+        this.pastries.set(cards);
         this.isLoading.set(false);
       },
       error: (err) => {
