@@ -24,8 +24,12 @@ interface ProductGroupCard {
   minPrice: number;
   flavorsCount: number;
   flavors: string[];
+  flavorPreview: string;
+  remainingFlavorsCount: number;
   sampleProductId: string;
 }
+
+const FLAVOR_PREVIEW_LIMIT = 3;
 
 @Component({
   selector: 'app-menu',
@@ -82,13 +86,19 @@ export class Menu implements OnInit {
         const cards: ProductGroupCard[] = [];
         groupedMap.forEach((prods, key) => {
           const first = prods[0];
+          const flavors = prods.map(p => p.name);
+          const previewFlavors = flavors.slice(0, FLAVOR_PREVIEW_LIMIT);
+          const remaining = flavors.length - previewFlavors.length;
+
           cards.push({
             groupName: key,
             category: first.category,
             image: first.image,
             minPrice: Math.min(...prods.map(p => p.price)),
             flavorsCount: prods.length,
-            flavors: prods.map(p => p.name),
+            flavors,
+            flavorPreview: previewFlavors.join(' • '),
+            remainingFlavorsCount: remaining,
             sampleProductId: first.id
           });
         });

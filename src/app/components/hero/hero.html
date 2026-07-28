@@ -1,10 +1,15 @@
-<section id="home" class="relative h-[90vh] w-full flex items-center justify-center text-center overflow-hidden">
+<section id="home" 
+         class="relative h-[90vh] w-full flex items-center justify-center text-center overflow-hidden"
+         (mouseenter)="onMouseEnter()" (mouseleave)="onMouseLeave()">
   <div class="absolute inset-0 z-0">
     <img src="/hero_pastry.jpg" alt="Artisan Pastries" class="w-full h-full object-cover brightness-[0.55] transform hover:scale-105 transition-transform duration-[20s] ease-out" />
   </div>
   <div class="relative z-10 px-6 flex flex-col items-center mt-20">
-    <h1 class="text-5xl md:text-7xl lg:text-8xl text-cream-50 font-serif mb-8 drop-shadow-2xl max-w-5xl leading-tight">
-      100% Homemade.<br/>Baked Fresh Every Morning.
+    <h1 
+      class="text-[2.75rem] md:text-[4.1rem] lg:text-[5.4rem] text-cream-50 font-serif mb-8 drop-shadow-2xl max-w-5xl leading-tight transition-opacity duration-[400ms] ease-in-out min-h-[2em]"
+      [class.opacity-0]="!isVisible()"
+      [class.opacity-100]="isVisible()">
+      {{ headlines[currentIndex()].line1 }}<br/>{{ headlines[currentIndex()].line2 }}
     </h1>
     <p class="text-lg md:text-xl text-cream-100 max-w-2xl mb-12 font-light tracking-wider drop-shadow-md">
       Experience the authentic taste of home. Crafted with love, zero preservatives, and premium ingredients in every bite.

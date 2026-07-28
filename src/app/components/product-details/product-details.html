@@ -1,12 +1,15 @@
-<section class="pt-32 pb-24 px-6 lg:px-16 bg-cream-50 min-h-screen">
-  <div class="max-w-7xl mx-auto pt-2">
-    <button (click)="goBack()" class="flex items-center text-sm font-semibold text-gray-500 hover:text-espresso-900 transition-colors mb-6">
-      <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-      BACK TO MENU
-    </button>
+<section class="pt-28 lg:pt-32 pb-16 px-6 lg:px-16 bg-cream-50 min-h-screen">
+  <div class="max-w-7xl mx-auto w-full">
+    <nav class="flex items-center flex-wrap gap-x-2 text-sm font-medium text-gray-500 mb-6" aria-label="Breadcrumb">
+      <a (click)="goBack()" class="hover:text-espresso-900 cursor-pointer transition-colors">Menu</a>
+      <span class="text-gray-300" *ngIf="selectedFlavor()?.category">/</span>
+      <a (click)="goToCategory(selectedFlavor()!.category)" class="hover:text-espresso-900 cursor-pointer transition-colors" *ngIf="selectedFlavor()?.category">{{ selectedFlavor()?.category }}</a>
+      <span class="text-gray-300" *ngIf="selectedFlavor()?.groupName || selectedFlavor()?.name">/</span>
+      <span class="text-espresso-900 font-semibold">{{ selectedFlavor()?.groupName || selectedFlavor()?.name }}</span>
+    </nav>
 
     <div *ngIf="isLoading()" class="animate-pulse flex flex-col lg:flex-row gap-8 lg:gap-12">
-      <div class="w-full lg:w-1/2 h-80 lg:h-[440px] bg-cream-200 rounded-lg"></div>
+      <div class="w-full lg:w-1/2 h-72 lg:h-[300px] bg-cream-200 rounded-lg"></div>
       <div class="w-full lg:w-1/2 flex flex-col gap-5 pt-4">
         <div class="h-8 bg-cream-200 w-3/4 rounded"></div>
         <div class="h-6 bg-caramel-200 w-1/4 rounded"></div>
@@ -15,98 +18,103 @@
     </div>
 
     <div *ngIf="!isLoading() && selectedFlavor()" class="flex flex-col lg:flex-row gap-8 lg:gap-16">
-      <!-- Image Gallery -->
-      <div class="w-full lg:w-1/2 flex flex-col gap-3">
-        <div class="w-full h-80 lg:h-[440px] rounded-lg overflow-hidden bg-cream-200 shadow-md">
+      <!-- Left Column: Image Gallery + Description -->
+      <div class="w-full lg:w-[42%] flex flex-col gap-3">
+        <div class="w-full h-64 lg:h-[280px] rounded-lg overflow-hidden bg-cream-200 shadow-md shrink-0">
           <img [src]="selectedMainImage()" [alt]="selectedFlavor()?.name" class="w-full h-full object-cover">
         </div>
-        
+
         <!-- Thumbnails -->
-        <div class="flex gap-3 overflow-x-auto pb-1" *ngIf="selectedFlavor()?.galleryImages?.length">
+        <div class="flex gap-3 overflow-x-auto pb-1 shrink-0" *ngIf="selectedFlavor()?.galleryImages?.length">
           <!-- Main Image Thumbnail -->
-          <button (click)="setMainImage(selectedFlavor()!.image)" [class.ring-2]="selectedMainImage() === selectedFlavor()?.image" class="shrink-0 w-20 h-20 rounded-md overflow-hidden ring-caramel-400 opacity-90 hover:opacity-100 transition-all">
+          <button (click)="setMainImage(selectedFlavor()!.image)" [class.ring-2]="selectedMainImage() === selectedFlavor()?.image" class="shrink-0 w-16 h-16 rounded-md overflow-hidden ring-caramel-400 opacity-90 hover:opacity-100 transition-all">
             <img [src]="selectedFlavor()?.image" class="w-full h-full object-cover">
           </button>
           <!-- Additional Gallery Images -->
-          <button *ngFor="let img of selectedFlavor()?.galleryImages" (click)="setMainImage(img)" [class.ring-2]="selectedMainImage() === img" class="shrink-0 w-20 h-20 rounded-md overflow-hidden ring-caramel-400 opacity-90 hover:opacity-100 transition-all">
+          <button *ngFor="let img of selectedFlavor()?.galleryImages" (click)="setMainImage(img)" [class.ring-2]="selectedMainImage() === img" class="shrink-0 w-16 h-16 rounded-md overflow-hidden ring-caramel-400 opacity-90 hover:opacity-100 transition-all">
             <img [src]="img" class="w-full h-full object-cover">
           </button>
         </div>
+
+        <!-- Description (moved here, under the image) -->
+        <p class="text-sm lg:text-base text-gray-600 leading-relaxed mt-1 max-w-[36ch]">{{ selectedFlavor()?.description }}</p>
       </div>
 
-      <!-- Details -->
-      <div class="w-full lg:w-1/2 flex flex-col pt-2 lg:pt-4">
+      <!-- Right Column: Info + Options -->
+      <div class="w-full lg:w-[58%] flex flex-col pt-2 lg:pt-0">
         <p class="text-xs font-bold uppercase tracking-widest text-caramel-600 mb-2">{{ selectedFlavor()?.category }}</p>
-        <h1 class="text-3xl lg:text-[42px] leading-tight font-serif text-espresso-900 mb-3">{{ selectedFlavor()?.groupName || selectedFlavor()?.name }}</h1>
-        
-        <div class="text-2xl font-semibold text-gray-800 mb-6 flex items-end gap-2">
+        <h1 class="text-2xl lg:text-4xl leading-tight font-serif text-espresso-900 mb-2">{{ selectedFlavor()?.groupName || selectedFlavor()?.name }}</h1>
+
+        <div class="text-xl lg:text-2xl font-semibold text-gray-800 mb-1 flex items-end gap-2">
           <span>₹{{ selectedFlavor()?.selectedVariant?.price }}</span>
           <span class="text-sm text-gray-500 font-normal pb-0.5">/ {{ selectedFlavor()?.selectedVariant?.name }}</span>
         </div>
 
-        <p class="text-base text-gray-600 leading-relaxed mb-8">{{ selectedFlavor()?.description }}</p>
-
-        <!-- Flavor Variants (Pill buttons) -->
-        <div class="mb-8" *ngIf="productFamily().length > 1">
-          <h3 class="text-[13px] font-semibold uppercase tracking-wider text-espresso-900 mb-3">Select Flavor</h3>
-          <div class="flex flex-wrap gap-3">
-            <button *ngFor="let prod of productFamily()" 
-                    (click)="selectFlavor(prod)"
-                    [class]="selectedFlavor()?.id === prod.id ? 'bg-espresso-900 text-white shadow-md' : 'bg-white text-gray-700 border border-gray-200 hover:border-caramel-400 hover:text-caramel-600'"
-                    class="px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-300">
-              {{ prod.name }}
-            </button>
-          </div>
-        </div>
-
-        <!-- Size Variants Dropdown -->
-        <div class="mb-8" *ngIf="selectedFlavor()?.variants && selectedFlavor()!.variants!.length > 1">
-          <h3 class="text-[13px] font-semibold uppercase tracking-wider text-espresso-900 mb-3">Select Size</h3>
-          <div class="flex flex-wrap gap-3">
-            <button *ngFor="let v of selectedFlavor()?.variants; let i = index" 
-                    (click)="onSizeChange(i)"
-                    [class]="v.name === selectedFlavor()?.selectedVariant?.name ? 'bg-espresso-900 text-white shadow-md' : 'bg-white text-gray-700 border border-gray-200 hover:border-caramel-400 hover:text-caramel-600'"
-                    class="px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-300">
-              {{ v.name }}
-            </button>
-          </div>
-        </div>
-
-        <!-- Eggless Toggle -->
-        <div class="mb-8 flex items-center gap-3" *ngIf="selectedFlavor()?.hasEgglessOption">
-          <label class="flex items-center gap-3 cursor-pointer group">
-            <div class="relative flex items-center">
-              <input type="checkbox" 
-                     [checked]="isEggless()" 
-                     (change)="isEggless.set(!isEggless())" 
-                     class="peer sr-only">
-              <div class="w-6 h-6 rounded border-2 border-gray-300 peer-checked:border-caramel-500 peer-checked:bg-caramel-500 transition-all flex items-center justify-center group-hover:border-caramel-400">
-                <svg class="w-4 h-4 text-white opacity-0 peer-checked:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
-                </svg>
-              </div>
+        <div class="space-y-7 py-6 border-t border-b border-cream-200"
+             *ngIf="productFamily().length > 1 || (selectedFlavor()?.variants && selectedFlavor()!.variants!.length > 0) || selectedFlavor()?.hasEgglessOption">
+          <!-- Flavor Variants (Pill buttons) -->
+          <div *ngIf="productFamily().length > 1">
+            <h3 class="text-[13px] font-semibold uppercase tracking-wider text-espresso-900 mb-4">Flavor</h3>
+            <div class="flex flex-wrap gap-x-2.5 gap-y-4">
+              <button *ngFor="let prod of productFamily()"
+                      (click)="selectFlavor(prod)"
+                      [class]="selectedFlavor()?.id === prod.id ? 'bg-espresso-900 text-white shadow-md' : 'bg-white text-gray-700 border border-gray-200 hover:border-caramel-400 hover:text-caramel-600'"
+                      class="px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-300">
+                {{ prod.name }}
+              </button>
             </div>
-            <span class="text-[13px] font-semibold uppercase tracking-wider text-espresso-900 group-hover:text-caramel-600 transition-colors">Eggless Option</span>
-          </label>
+          </div>
+
+          <!-- Size Variants (always shown, even with a single option) -->
+          <div *ngIf="selectedFlavor()?.variants && selectedFlavor()!.variants!.length > 0">
+            <h3 class="text-[13px] font-semibold uppercase tracking-wider text-espresso-900 mb-4">Size</h3>
+            <div class="flex flex-wrap gap-2.5">
+              <button *ngFor="let v of selectedFlavor()?.variants; let i = index"
+                      (click)="onSizeChange(i)"
+                      [class]="v.name === selectedFlavor()?.selectedVariant?.name ? 'bg-espresso-900 text-white shadow-md' : 'bg-white text-gray-700 border border-gray-200 hover:border-caramel-400 hover:text-caramel-600'"
+                      class="px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-300">
+                {{ v.name }}
+              </button>
+            </div>
+          </div>
+
+          <!-- Dietary / Eggless Toggle -->
+          <div *ngIf="selectedFlavor()?.hasEgglessOption">
+            <h3 class="text-[13px] font-semibold uppercase tracking-wider text-espresso-900 mb-4">Dietary</h3>
+            <label class="inline-flex items-center gap-3 cursor-pointer group select-none">
+              <span class="relative flex items-center justify-center shrink-0">
+                <input type="checkbox"
+                       [checked]="isEggless()"
+                       (change)="isEggless.set(!isEggless())"
+                       class="peer sr-only">
+                <span class="w-5 h-5 rounded border-2 border-gray-300 bg-white peer-checked:bg-espresso-900 peer-checked:border-espresso-900 group-hover:border-caramel-400 transition-colors flex items-center justify-center">
+                  <svg class="w-3.5 h-3.5 text-white opacity-0 peer-checked:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                  </svg>
+                </span>
+              </span>
+              <span class="text-sm font-medium text-gray-700 group-hover:text-espresso-900 transition-colors">Eggless</span>
+            </label>
+          </div>
         </div>
 
         <!-- Add to Cart -->
-        <button (click)="addToCart()" class="w-full md:w-auto px-12 py-3.5 rounded-full bg-caramel-500 text-white font-bold tracking-widest uppercase hover:bg-espresso-900 transition-colors duration-300 shadow-lg text-sm">
+        <button (click)="addToCart()" class="w-full md:w-auto px-12 py-3.5 rounded-full bg-caramel-500 text-white font-bold tracking-widest uppercase hover:bg-espresso-900 transition-colors duration-300 shadow-lg text-sm mt-7">
           {{ modifyCartId() ? 'Save Changes' : 'Add To Cart' }}
         </button>
       </div>
     </div>
 
     <!-- Suggested Items Section -->
-    <div *ngIf="!isLoading() && suggestedProducts().length > 0" class="mt-32 pt-16 border-t border-cream-200">
+    <div *ngIf="!isLoading() && suggestedProducts().length > 0" class="mt-24 pt-16 border-t border-cream-200">
       <div class="text-center mb-12">
         <h2 class="text-xs tracking-[0.2em] text-caramel-500 uppercase font-semibold mb-4">Keep Browsing</h2>
         <h3 class="text-3xl font-serif text-espresso-900">Explore Other Pastries</h3>
       </div>
-      
+
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
         <div *ngFor="let pastry of suggestedProducts()" (click)="goToProduct(pastry.sampleProductId)" class="group cursor-pointer flex flex-col h-full bg-white shadow-sm hover:shadow-xl transition-shadow duration-300 rounded-sm overflow-hidden border border-cream-200">
-          
+
           <div class="relative h-64 w-full overflow-hidden bg-gradient-to-br from-cream-200 to-caramel-100">
             <div *ngIf="!pastry.image" class="absolute inset-0 flex items-center justify-center text-caramel-600/50">
               <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
@@ -118,7 +126,7 @@
             <p class="text-[10px] uppercase tracking-widest text-caramel-600 font-semibold mb-2">{{ pastry.category }}</p>
             <h4 class="text-xl font-serif text-espresso-900 mb-2 group-hover:text-caramel-600 transition-colors">{{ pastry.groupName }}</h4>
             <p class="text-sm text-gray-600 mb-6 flex-grow line-clamp-2">{{ pastry.flavorsCount }} Flavours Available<br><span class="text-xs text-gray-400">{{ pastry.flavors.join(' • ') }}</span></p>
-            
+
             <div class="flex items-end justify-between mt-auto pt-4 border-t border-cream-200">
               <div class="text-lg font-semibold text-espresso-900 mb-1 flex items-baseline gap-1">
                 <span class="text-sm text-gray-500 mr-1">from</span>

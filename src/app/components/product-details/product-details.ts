@@ -186,6 +186,17 @@ export class ProductDetails implements OnInit {
   }
   
   goBack() {
-    this.router.navigate(['/']);
+    this.router.navigate(['/']).then(() => {
+      setTimeout(() => {
+        const element = document.querySelector('#menu');
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 100);
+    });
+  }
+
+  goToCategory(category: string) {
+    this.goBack();
   }
 }
