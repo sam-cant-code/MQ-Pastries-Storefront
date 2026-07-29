@@ -100,6 +100,10 @@ export class ProductDetails implements OnInit {
           if (p.variants && p.variants.length > 0) {
             variants = [...variants, ...p.variants];
           }
+
+          // Sort Size pills ascending by price (lowest price first)
+          variants = [...variants].sort((a, b) => a.price - b.price);
+
           let selected = variants[0];
           
           // If we are modifying, try to match the selected variant based on the modifyId
@@ -113,8 +117,18 @@ export class ProductDetails implements OnInit {
           return { ...p, variants, selectedVariant: selected };
         });
 
+        // Sort Flavor pills ascending by base price (lowest price first)
+        processed.sort((a, b) => a.price - b.price);
+
         this.productFamily.set(processed);
-        const mainProduct = processed.find(p => p.id === id) || processed[0];
+
+        // Default to the cheapest flavor, unless we're modifying an existing cart item
+        // (in which case keep showing the flavor that was actually added to cart).
+        const modifyId = this.modifyCartId();
+        const mainProduct = modifyId
+          ? (processed.find(p => p.id === id) || processed[0])
+          : processed[0];
+
         this.selectFlavor(mainProduct);
         this.fetchSuggestedProducts(mainProduct.groupName || mainProduct.name);
         this.isLoading.set(false);

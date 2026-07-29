@@ -104,25 +104,27 @@ export class Menu implements OnInit {
             groupedMap.get(key)!.push(p);
         });
 
-        const cards: ProductGroupCard[] = [];
-        groupedMap.forEach((prods, key) => {
-          const first = prods[0];
-          const flavors = prods.map(p => p.name);
-          const previewFlavors = flavors.slice(0, FLAVOR_PREVIEW_LIMIT);
-          const remaining = flavors.length - previewFlavors.length;
+      const cards: ProductGroupCard[] = [];
+      groupedMap.forEach((prods, key) => {
+        // Sort flavors ascending by price so the cheapest shows first everywhere
+        const sortedProds = [...prods].sort((a, b) => a.price - b.price);
+        const first = sortedProds[0];
+        const flavors = sortedProds.map(p => p.name);
+        const previewFlavors = flavors.slice(0, FLAVOR_PREVIEW_LIMIT);
+        const remaining = flavors.length - previewFlavors.length;
 
-          cards.push({
-            groupName: key,
-            category: first.category,
-            image: first.image,
-            minPrice: Math.min(...prods.map(p => p.price)),
-            flavorsCount: prods.length,
-            flavors,
-            flavorPreview: previewFlavors.join(' • '),
-            remainingFlavorsCount: remaining,
-            sampleProductId: first.id
-          });
+        cards.push({
+          groupName: key,
+          category: first.category,
+          image: first.image,
+          minPrice: Math.min(...sortedProds.map(p => p.price)),
+          flavorsCount: sortedProds.length,
+          flavors,
+          flavorPreview: previewFlavors.join(' • '),
+          remainingFlavorsCount: remaining,
+          sampleProductId: first.id
         });
+      });
 
         this.pastries.set(cards);
         this.isLoading.set(false);
