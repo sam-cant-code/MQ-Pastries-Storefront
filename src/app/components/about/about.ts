@@ -6,4 +6,12 @@ import { Component } from '@angular/core';
   templateUrl: './about.html',
   styleUrl: './about.css',
 })
-export class About {}
+export class About {
+  scrollToMenu(event: Event) {
+    event.preventDefault();
+    const element = document.querySelector('#menu');
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+  }
+}

@@ -34,18 +34,18 @@
     </div>
 
     <!-- Category Filters -->
-    <div class="flex flex-wrap justify-center gap-6 mb-16">
+    <div class="flex flex-wrap justify-center gap-3 md:gap-6 mb-16">
       <button 
         (click)="setCategory('All')"
         [class]="selectedCategory() === 'All' ? 'bg-espresso-900 text-cream-50' : 'bg-cream-100 text-espresso-900 hover:bg-caramel-100'"
-        class="px-6 py-2 rounded-full text-sm font-semibold tracking-wider uppercase transition-colors duration-300">
+        class="px-5 md:px-6 py-2 rounded-full text-xs md:text-sm font-semibold tracking-wider uppercase transition-colors duration-300">
         All
       </button>
       
       <button *ngFor="let cat of categories()"
         (click)="setCategory(cat.name)"
         [class]="selectedCategory() === cat.name ? 'bg-espresso-900 text-cream-50' : 'bg-cream-100 text-espresso-900 hover:bg-caramel-100'"
-        class="flex items-center gap-3 px-6 py-2 rounded-full text-sm font-semibold tracking-wider uppercase transition-colors duration-300">
+        class="flex items-center gap-3 px-5 md:px-6 py-2 rounded-full text-xs md:text-sm font-semibold tracking-wider uppercase transition-colors duration-300">
         <span>{{ cat.name }}</span>
       </button>
     </div>
@@ -113,6 +113,13 @@
           </div>
         </div>
       </div>
+    </div>
+
+    <!-- View More -->
+    <div *ngIf="!isLoading() && hasMorePastries()" class="text-center mt-16">
+      <button (click)="loadMorePastries()" class="uppercase tracking-widest text-xs font-semibold px-10 py-4 border border-espresso-900 text-espresso-900 hover:bg-espresso-900 hover:text-cream-50 transition-colors duration-300">
+        View More
+      </button>
     </div>
     
   </div>

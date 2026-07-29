@@ -1,7 +1,7 @@
 import { Component, signal, computed, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { category_list } from '../../data/assets';
 import { CartService } from '../../services/cart.service';
 import { environment } from '../../../environments/environment';
@@ -30,6 +30,8 @@ interface ProductGroupCard {
 }
 
 const FLAVOR_PREVIEW_LIMIT = 3;
+const INITIAL_VISIBLE_ROWS = 12; // ~3 rows at 4 columns
+const LOAD_MORE_STEP = 8; // ~2 rows at 4 columns
 
 @Component({
   selector: 'app-menu',
@@ -40,6 +42,7 @@ const FLAVOR_PREVIEW_LIMIT = 3;
 export class Menu implements OnInit {
   private http = inject(HttpClient);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
   
   categories = signal<{name: string}[]>([]);
   pastries = signal<ProductGroupCard[]>([]);
@@ -47,8 +50,9 @@ export class Menu implements OnInit {
   
   failedImages = new Set<string>();
   selectedCategory = signal<string>('All');
+  visibleCount = signal<number>(INITIAL_VISIBLE_ROWS);
 
-  filteredPastries = computed(() => {
+  allFilteredPastries = computed(() => {
     const category = this.selectedCategory();
     const allPastries = this.pastries();
     
@@ -58,7 +62,24 @@ export class Menu implements OnInit {
     return allPastries.filter(p => p.category === category);
   });
 
+  filteredPastries = computed(() =>
+    this.allFilteredPastries().slice(0, this.visibleCount())
+  );
+
+  hasMorePastries = computed(() =>
+    this.visibleCount() < this.allFilteredPastries().length
+  );
+
   ngOnInit() {
+    // Pick up a category passed in via query params (e.g. from a product page breadcrumb)
+    this.route.queryParamMap.subscribe(params => {
+      const category = params.get('category');
+      if (category) {
+        this.selectedCategory.set(category);
+        this.visibleCount.set(INITIAL_VISIBLE_ROWS);
+      }
+    });
+
     // Fetch Categories
     this.http.get<{name: string}[]>(`${environment.apiUrl}/public/categories`).subscribe({
       next: (cats) => {
@@ -115,6 +136,11 @@ export class Menu implements OnInit {
 
   setCategory(category: string) {
     this.selectedCategory.set(category);
+    this.visibleCount.set(INITIAL_VISIBLE_ROWS);
+  }
+
+  loadMorePastries() {
+    this.visibleCount.set(this.visibleCount() + LOAD_MORE_STEP);
   }
 
   onImageError(event: any, imageSrc: string) {

@@ -85,9 +85,10 @@
       <span class="text-gray-600 font-medium">Total Amount</span>
       <span class="text-2xl font-serif text-espresso-900 font-bold">₹{{ cartService.totalPrice() }}</span>
     </div>
-    <button (click)="processCheckout()" [disabled]="checkoutForm.invalid || isProcessing()" class="w-full bg-espresso-900 hover:bg-espresso-800 text-white font-semibold py-4 rounded shadow-lg transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-2">
-      <div *ngIf="isProcessing()" class="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-      {{ isProcessing() ? 'Processing...' : 'Pay with Razorpay' }}
+    <button disabled class="w-full bg-gray-300 text-gray-500 font-semibold py-4 rounded shadow-inner cursor-not-allowed flex justify-center items-center gap-2">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+      Online Ordering Coming Soon
     </button>
+    <p class="text-xs text-gray-500 text-center mt-3">We're finishing up online payments — check back shortly, or reach out via the contact details below to place your order directly.</p>
   </div>
 </div>

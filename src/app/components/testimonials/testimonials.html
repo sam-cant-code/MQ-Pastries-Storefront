@@ -1,10 +1,24 @@
 <section class="py-24 bg-cream-100">
   <div class="max-w-5xl mx-auto px-6 lg:px-16 text-center">
     <svg class="w-12 h-12 mx-auto text-caramel-400 mb-8" fill="currentColor" viewBox="0 0 24 24"><path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" /></svg>
-    <h3 class="text-3xl md:text-4xl font-serif text-espresso-900 mb-12 italic leading-relaxed">
-      "Stepping into MQ Pastries feels like a quick trip to Paris. The attention to detail in every croissant, the warmth of the atmosphere... it is simply unmatched in the city."
-    </h3>
-    <div class="font-serif text-lg text-espresso-900 font-bold mb-1">- Eleanor R.</div>
-    <div class="text-xs tracking-widest text-caramel-500 uppercase">Local Guide</div>
+
+    <div class="min-h-[10rem] flex flex-col items-center justify-center transition-opacity duration-[400ms] ease-in-out"
+         [class.opacity-0]="!isVisible()"
+         [class.opacity-100]="isVisible()">
+      <h3 class="text-2xl md:text-3xl font-serif text-espresso-900 mb-8 italic leading-relaxed max-w-3xl">
+        "{{ testimonials[currentIndex()].quote }}"
+      </h3>
+      <div class="font-serif text-lg text-espresso-900 font-bold mb-1">- {{ testimonials[currentIndex()].name }}</div>
+      <div *ngIf="testimonials[currentIndex()].title" class="text-xs tracking-widest text-caramel-500 uppercase">
+        {{ testimonials[currentIndex()].title }}
+      </div>
+    </div>
+
+    <div class="flex justify-center gap-2 mt-10">
+      <span *ngFor="let t of testimonials; let i = index"
+            [class]="i === currentIndex() ? 'bg-caramel-500 w-6' : 'bg-caramel-200 w-2'"
+            class="h-2 rounded-full transition-all duration-300">
+      </span>
+    </div>
   </div>
 </section>

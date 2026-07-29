@@ -1,4 +1,4 @@
-<section class="pt-28 lg:pt-32 pb-16 px-6 lg:px-16 bg-cream-50 min-h-screen">
+<section class="pt-24 sm:pt-28 lg:pt-32 pb-16 px-6 lg:px-16 bg-cream-50 min-h-screen">
   <div class="max-w-7xl mx-auto w-full">
     <nav class="flex items-center flex-wrap gap-x-2 text-sm font-medium text-gray-500 mb-6" aria-label="Breadcrumb">
       <a (click)="goBack()" class="hover:text-espresso-900 cursor-pointer transition-colors">Menu</a>
@@ -20,7 +20,7 @@
     <div *ngIf="!isLoading() && selectedFlavor()" class="flex flex-col lg:flex-row gap-8 lg:gap-16">
       <!-- Left Column: Image Gallery + Description -->
       <div class="w-full lg:w-[42%] flex flex-col gap-3">
-        <div class="w-full h-64 lg:h-[280px] rounded-lg overflow-hidden bg-cream-200 shadow-md shrink-0">
+        <div class="w-full h-64 lg:h-[380px] rounded-lg overflow-hidden bg-cream-200 shadow-md shrink-0">
           <img [src]="selectedMainImage()" [alt]="selectedFlavor()?.name" class="w-full h-full object-cover">
         </div>
 
@@ -140,6 +140,13 @@
             </div>
           </div>
         </div>
+      </div>
+
+      <!-- View More -->
+      <div *ngIf="hasMoreSuggested()" class="text-center mt-12">
+        <button (click)="loadMoreSuggested()" class="uppercase tracking-widest text-xs font-semibold px-10 py-4 border border-espresso-900 text-espresso-900 hover:bg-espresso-900 hover:text-cream-50 transition-colors duration-300">
+          View More
+        </button>
       </div>
     </div>
   </div>

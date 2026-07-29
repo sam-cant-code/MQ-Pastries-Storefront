@@ -1,23 +1,21 @@
 <section id="home" 
-         class="relative h-[90vh] w-full flex items-center justify-center text-center overflow-hidden"
+         class="relative h-[100svh] w-full flex items-center justify-center text-center overflow-hidden"
          (mouseenter)="onMouseEnter()" (mouseleave)="onMouseLeave()">
   <div class="absolute inset-0 z-0">
-    <img src="/hero_pastry.jpg" alt="Artisan Pastries" class="w-full h-full object-cover brightness-[0.55] transform hover:scale-105 transition-transform duration-[20s] ease-out" />
+    <img src="/hero_pastry.jpg" alt="Artisan Pastries" class="w-full h-full object-cover brightness-[0.55]" />
   </div>
-  <div class="relative z-10 px-6 flex flex-col items-center mt-20">
+  <div class="relative z-10 px-6 flex flex-col items-center">
     <h1 
-      class="text-[2.75rem] md:text-[4.1rem] lg:text-[5.4rem] text-cream-50 font-serif mb-8 drop-shadow-2xl max-w-5xl leading-tight transition-opacity duration-[400ms] ease-in-out min-h-[2em]"
-      [class.opacity-0]="!isVisible()"
-      [class.opacity-100]="isVisible()">
-      {{ headlines[currentIndex()].line1 }}<br/>{{ headlines[currentIndex()].line2 }}
+      class="text-[2rem] sm:text-[2.5rem] md:text-[3.75rem] lg:text-[5rem] text-cream-50 font-serif mb-5 sm:mb-8 drop-shadow-2xl max-w-5xl leading-tight transition-opacity duration-[400ms] ease-in-out">
+      <span [class.opacity-0]="!isVisible()" [class.opacity-100]="isVisible()">
+        {{ headlines[currentIndex()].line1 }}<br/>{{ headlines[currentIndex()].line2 }}
+      </span>
     </h1>
-    <p class="text-lg md:text-xl text-cream-100 max-w-2xl mb-12 font-light tracking-wider drop-shadow-md">
+    <p class="text-sm sm:text-lg md:text-xl text-cream-100 max-w-2xl mb-6 sm:mb-12 font-light tracking-wider drop-shadow-md">
       Experience the authentic taste of home. Crafted with love, zero preservatives, and premium ingredients in every bite.
     </p>
-    <div class="flex gap-6 flex-col sm:flex-row">
-      <a (click)="scrollToMenu($event)" class="px-10 py-4 bg-caramel-500 hover:bg-caramel-600 text-cream-50 text-xs font-semibold tracking-widest uppercase cursor-pointer transition-all duration-300 shadow-xl hover:shadow-2xl hover:-translate-y-1 inline-block">
-        Explore Our Menu
-      </a>
-    </div>
+    <a (click)="scrollToMenu($event)" class="px-10 py-4 bg-caramel-500 hover:bg-caramel-600 text-cream-50 text-xs font-semibold tracking-widest uppercase cursor-pointer transition-all duration-300 shadow-xl hover:shadow-2xl hover:-translate-y-1 inline-block">
+      Explore Our Menu
+    </a>
   </div>
 </section>

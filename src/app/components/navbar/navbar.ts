@@ -17,12 +17,16 @@ export class Navbar {
   private router = inject(Router);
 
   isLightMode = toSignal(
-    this.router.events.pipe(
-      filter(event => event instanceof NavigationEnd),
-      map(() => this.router.url.includes('/product/'))
-    ),
-    { initialValue: this.router.url.includes('/product/') }
-  );
+  this.router.events.pipe(
+    filter(event => event instanceof NavigationEnd),
+    map(() => this.router.url.includes('/product/') || 
+              this.router.url.includes('/allergens') || 
+              this.router.url.includes('/accessibility'))
+  ),
+  { initialValue: this.router.url.includes('/product/') || 
+                  this.router.url.includes('/allergens') || 
+                  this.router.url.includes('/accessibility') }
+);
 
   goHome(fragment?: string) {
     if (fragment) {

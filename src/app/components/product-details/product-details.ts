@@ -34,6 +34,8 @@ interface ProductGroupCard {
   sampleProductId: string;
 }
 
+const SUGGESTED_PAGE_SIZE = 4;
+
 @Component({
   selector: 'app-product-details',
   standalone: true,
@@ -51,7 +53,18 @@ export class ProductDetails implements OnInit {
   selectedFlavor = signal<Product | null>(null);
   selectedMainImage = signal<string>('');
 
-  suggestedProducts = signal<ProductGroupCard[]>([]);
+  // Full pool of suggestions for the current product, plus how many are currently revealed
+  allSuggestedProducts = signal<ProductGroupCard[]>([]);
+  visibleSuggestedCount = signal(SUGGESTED_PAGE_SIZE);
+
+  suggestedProducts = computed(() =>
+    this.allSuggestedProducts().slice(0, this.visibleSuggestedCount())
+  );
+
+  hasMoreSuggested = computed(() =>
+    this.visibleSuggestedCount() < this.allSuggestedProducts().length
+  );
+
   modifyCartId = signal<string | null>(null);
 
   isEggless = signal(false);
@@ -71,7 +84,8 @@ export class ProductDetails implements OnInit {
       const id = params.get('id');
       if (id) {
         // Clear suggestions when navigating to a new product
-        this.suggestedProducts.set([]);
+        this.allSuggestedProducts.set([]);
+        this.visibleSuggestedCount.set(SUGGESTED_PAGE_SIZE);
         this.fetchProductDetails(id);
       }
     });
@@ -141,9 +155,14 @@ export class ProductDetails implements OnInit {
           });
           
           const shuffled = cards.sort(() => 0.5 - Math.random());
-          this.suggestedProducts.set(shuffled.slice(0, 4));
+          this.allSuggestedProducts.set(shuffled);
+          this.visibleSuggestedCount.set(SUGGESTED_PAGE_SIZE);
       }
     });
+  }
+
+  loadMoreSuggested() {
+    this.visibleSuggestedCount.set(this.visibleSuggestedCount() + SUGGESTED_PAGE_SIZE);
   }
 
   goToProduct(id: string) {
@@ -197,6 +216,13 @@ export class ProductDetails implements OnInit {
   }
 
   goToCategory(category: string) {
-    this.goBack();
+    this.router.navigate(['/'], { queryParams: { category } }).then(() => {
+      setTimeout(() => {
+        const element = document.querySelector('#menu');
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 100);
+    });
   }
 }
