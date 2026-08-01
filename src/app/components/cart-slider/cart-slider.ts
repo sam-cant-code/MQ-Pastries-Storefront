@@ -1,12 +1,14 @@
 import { Component, inject, signal, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { CartService } from '../../services/cart.service';
 import { environment } from '../../../environments/environment';
 
 declare var Razorpay: any;
+
+import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-cart-slider',
@@ -25,18 +27,37 @@ export class CartSlider implements OnDestroy {
   verificationStatus = signal<'none' | 'sending' | 'sent' | 'verified'>('none');
   deliveryCost = signal<number>(0);
   calculatingShipping = signal<boolean>(false);
+  
+  standardCost = signal<number | null>(null);
+  endOfDayCost = signal<number | null>(null);
+  private lastCalculatedPincode = '';
+  private lastCalculatedAddress = '';
+
   private verificationInterval: any;
+
+  addressPincodeValidator: ValidatorFn = (control: AbstractControl): ValidationErrors | null => {
+    const isPickup = control.get('isPickup')?.value;
+    if (isPickup) return null;
+    
+    const pincode = control.get('pincode')?.value;
+    const address = control.get('address')?.value;
+    
+    if (pincode && address && !address.includes(pincode)) {
+      return { pincodeMismatch: true };
+    }
+    return null;
+  };
 
   constructor() {
     this.checkoutForm = this.fb.group({
-      isPickup: [false],
+      isPickup: [{ value: true, disabled: false }],
       deliveryType: ['standard'],
       customerName: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
       phone: ['', [Validators.required, Validators.pattern('^[0-9]{10}$')]],
-      address: ['', Validators.required],
-      pincode: ['', [Validators.required, Validators.pattern('^56[0-9]{4}$')]]
-    });
+      address: [''],
+      pincode: ['']
+    }, { validators: this.addressPincodeValidator });
 
     this.checkoutForm.get('isPickup')?.valueChanges.subscribe(isPickup => {
       if (isPickup) {
@@ -53,14 +74,29 @@ export class CartSlider implements OnDestroy {
     this.checkoutForm.valueChanges.subscribe(val => {
       if (val.isPickup) {
         this.deliveryCost.set(0);
+        this.standardCost.set(null);
+        this.endOfDayCost.set(null);
         return;
       }
       
+      if (this.standardCost() !== null && this.endOfDayCost() !== null) {
+        this.deliveryCost.set(val.deliveryType === 'endofday' ? this.endOfDayCost()! : this.standardCost()!);
+      }
+
       const pincodeControl = this.checkoutForm.get('pincode');
-      if (pincodeControl?.valid && val.pincode) {
-        this.calculateShippingCost(val.pincode, val.address, val.deliveryType);
+      const addressControl = this.checkoutForm.get('address');
+      const address = val.address || '';
+      
+      if (pincodeControl?.valid && val.pincode && address.trim().length > 0) {
+        this.calculateShippingCost(val.pincode, address);
       } else {
-        this.deliveryCost.set(0);
+        if (this.lastCalculatedAddress !== address || this.lastCalculatedPincode !== val.pincode) {
+          this.standardCost.set(null);
+          this.endOfDayCost.set(null);
+          this.deliveryCost.set(0);
+          this.lastCalculatedAddress = '';
+          this.lastCalculatedPincode = '';
+        }
       }
     });
   }
@@ -70,23 +106,47 @@ export class CartSlider implements OnDestroy {
     return hour >= 20 || hour < 9;
   }
 
-  private calculateShippingCost(pincode: string, address: string, deliveryType: string) {
+  private calculateShippingCost(pincode: string, address: string) {
+    if (this.lastCalculatedPincode === pincode && this.lastCalculatedAddress === address) return;
+    
+    this.lastCalculatedPincode = pincode;
+    this.lastCalculatedAddress = address;
+
     this.calculatingShipping.set(true);
     const totalQty = this.cartService.getItems().reduce((sum, item) => sum + item.quantity, 0);
-    this.http.post<{shippingCost: number}>(`${environment.apiUrl}/public/orders/calculate-shipping`, {
-      pincode, address, deliveryType, totalQty
+
+    const reqStandard = this.http.post<{shippingCost: number}>(`${environment.apiUrl}/public/orders/calculate-shipping`, {
+      pincode, address, deliveryType: 'standard', totalQty
+    });
+    
+    const reqEndOfDay = this.http.post<{shippingCost: number}>(`${environment.apiUrl}/public/orders/calculate-shipping`, {
+      pincode, address, deliveryType: 'endofday', totalQty
+    });
+
+    forkJoin({
+      standard: reqStandard,
+      endOfDay: reqEndOfDay
     }).subscribe({
       next: (res) => {
-        this.deliveryCost.set(res.shippingCost);
+        this.standardCost.set(res.standard.shippingCost);
+        this.endOfDayCost.set(res.endOfDay.shippingCost);
+        
+        const type = this.checkoutForm.get('deliveryType')?.value || 'standard';
+        this.deliveryCost.set(type === 'endofday' ? res.endOfDay.shippingCost : res.standard.shippingCost);
+        
         this.calculatingShipping.set(false);
         this.checkoutForm.get('address')?.setErrors(null);
       },
       error: (err) => {
+        this.standardCost.set(null);
+        this.endOfDayCost.set(null);
         this.deliveryCost.set(0);
         this.calculatingShipping.set(false);
         const errorMsg = err.error?.error || 'Invalid address or delivery not possible.';
         this.cartService.showToast(errorMsg, 'Error');
         this.checkoutForm.get('address')?.setErrors({ invalidAddress: true });
+        this.lastCalculatedAddress = ''; // Allow retry
+        this.lastCalculatedPincode = '';
       }
     });
   }
