@@ -52,7 +52,12 @@ export class CartService {
 
     this.cartItems.set(items);
     this.saveCart();
-    this.showToast(`${product.name} (${variant.name}) added to cart`);
+    
+    if (existing) {
+      this.showToast(`${product.name} (${variant.name}) added to cart x${existing.quantity}`);
+    } else {
+      this.showToast(`${product.name} (${variant.name}) added to cart`);
+    }
   }
 
   showToast(message: string, action: string = 'View Cart') {

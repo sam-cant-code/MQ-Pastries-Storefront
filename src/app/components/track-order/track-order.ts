@@ -158,18 +158,11 @@ export class TrackOrder implements OnInit, OnDestroy {
   error = signal<string | null>(null);
 
   getSteps(order: Order) {
-    if (order.pickup) {
-      return [
-        { status: 'PAID', label: 'Confirmed', icon: 'fas fa-check' },
-        { status: 'PREPARING', label: 'Preparing', icon: 'fas fa-cookie-bite' },
-        { status: 'READY_FOR_PICKUP', label: 'Ready for Pickup', icon: 'fas fa-box-open' }
-      ];
-    }
     return [
       { status: 'PAID', label: 'Confirmed', icon: 'fas fa-check' },
       { status: 'PREPARING', label: 'Preparing', icon: 'fas fa-cookie-bite' },
-      { status: 'OUT_FOR_DELIVERY', label: 'Out for Delivery', icon: 'fas fa-shipping-fast' },
-      { status: 'DELIVERED', label: 'Delivered', icon: 'fas fa-home' }
+      { status: 'READY_FOR_PICKUP', label: 'Ready for Pickup', icon: 'fas fa-box-open' },
+      { status: 'DELIVERED', label: 'Picked Up', icon: 'fas fa-hand-holding-heart' }
     ];
   }
 
@@ -213,9 +206,10 @@ export class TrackOrder implements OnInit, OnDestroy {
     if (currentStatus === 'FAILED') return false;
     if (currentStatus === 'DELIVERED') return true;
     
-    const orderStatuses = isPickup 
-      ? ['PENDING', 'PAID', 'PREPARING', 'READY_FOR_PICKUP', 'DELIVERED']
-      : ['PENDING', 'PAID', 'PREPARING', 'OUT_FOR_DELIVERY', 'DELIVERED'];
+    // We treat OUT_FOR_DELIVERY same as READY_FOR_PICKUP in timeline just in case legacy orders use it
+    if (currentStatus === 'OUT_FOR_DELIVERY') currentStatus = 'READY_FOR_PICKUP';
+    
+    const orderStatuses = ['PENDING', 'PAID', 'PREPARING', 'READY_FOR_PICKUP', 'DELIVERED'];
       
     const stepIdx = orderStatuses.indexOf(stepStatus);
     const currentIdx = orderStatuses.indexOf(currentStatus);
@@ -225,16 +219,11 @@ export class TrackOrder implements OnInit, OnDestroy {
   getProgressWidth(currentStatus: string, isPickup: boolean): string {
     if (currentStatus === 'FAILED' || currentStatus === 'PENDING') return '0%';
     
-    if (isPickup) {
-      if (currentStatus === 'PAID') return '0%';
-      if (currentStatus === 'PREPARING') return '50%';
-      if (currentStatus === 'READY_FOR_PICKUP' || currentStatus === 'DELIVERED') return '100%';
-    } else {
-      if (currentStatus === 'PAID') return '0%';
-      if (currentStatus === 'PREPARING') return '33%';
-      if (currentStatus === 'OUT_FOR_DELIVERY') return '66%';
-      if (currentStatus === 'DELIVERED') return '100%';
-    }
+    if (currentStatus === 'PAID') return '0%';
+    if (currentStatus === 'PREPARING') return '33%';
+    if (currentStatus === 'READY_FOR_PICKUP' || currentStatus === 'OUT_FOR_DELIVERY') return '66%';
+    if (currentStatus === 'DELIVERED') return '100%';
+    
     return '0%';
   }
 }
