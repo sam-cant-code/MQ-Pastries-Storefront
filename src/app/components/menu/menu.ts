@@ -54,12 +54,13 @@ export class Menu implements OnInit {
 
   allFilteredPastries = computed(() => {
     const category = this.selectedCategory();
-    const allPastries = this.pastries();
+    let result = this.pastries();
     
-    if (category === 'All') {
-      return allPastries;
+    if (category !== 'All') {
+      result = result.filter(p => p.category === category);
     }
-    return allPastries.filter(p => p.category === category);
+    
+    return result;
   });
 
   filteredPastries = computed(() =>

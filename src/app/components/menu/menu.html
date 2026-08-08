@@ -38,21 +38,40 @@
       <div class="w-16 h-[1px] bg-caramel-400 mx-auto mt-6"></div>
     </div>
 
-    <!-- Category Filters -->
-    <div class="flex flex-wrap justify-center gap-3 md:gap-6 mb-16">
-      <button 
-        (click)="setCategory('All')"
-        [class]="selectedCategory() === 'All' ? 'bg-espresso-900 text-cream-50' : 'bg-cream-100 text-espresso-900 hover:bg-caramel-100'"
-        class="px-5 md:px-6 py-2 rounded-full text-xs md:text-sm font-semibold tracking-wider uppercase transition-colors duration-300">
-        All
-      </button>
-      
-      <button *ngFor="let cat of categories()"
-        (click)="setCategory(cat.name)"
-        [class]="selectedCategory() === cat.name ? 'bg-espresso-900 text-cream-50' : 'bg-cream-100 text-espresso-900 hover:bg-caramel-100'"
-        class="flex items-center gap-3 px-5 md:px-6 py-2 rounded-full text-xs md:text-sm font-semibold tracking-wider uppercase transition-colors duration-300">
-        <span>{{ cat.name }}</span>
-      </button>
+    <!-- Search & Categories -->
+    <div class="max-w-5xl mx-auto mb-16 px-4">
+      <div class="relative min-h-[48px] flex">
+        
+        <!-- Category Filters (Pills) -->
+        <div #categoryScroll class="grid grid-rows-2 lg:grid-rows-1 grid-flow-col auto-cols-max gap-3 md:gap-4 overflow-x-auto w-full transition-all duration-700 ease-in-out relative pb-2 -mb-2 pr-16 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden scroll-smooth">
+          
+          <button 
+            (click)="setCategory('All')"
+            [class]="selectedCategory() === 'All' ? 'bg-espresso-900 text-cream-50' : 'bg-cream-100 text-espresso-900 hover:bg-caramel-100'"
+            class="shrink-0 px-5 md:px-6 py-2 rounded-full text-xs md:text-sm font-semibold tracking-wider uppercase transition-colors duration-300">
+            All
+          </button>
+          
+          <ng-container *ngFor="let cat of categories()">
+            <button 
+              (click)="setCategory(cat.name)"
+              [class]="selectedCategory() === cat.name ? 'bg-espresso-900 text-cream-50' : 'bg-cream-100 text-espresso-900 hover:bg-caramel-100'"
+              class="shrink-0 flex items-center gap-3 px-5 md:px-6 py-2 rounded-full text-xs md:text-sm font-semibold tracking-wider uppercase transition-colors duration-300">
+              <span>{{ cat.name }}</span>
+            </button>
+          </ng-container>
+        </div>
+
+        <!-- Scroll Arrow Overlay -->
+        <div class="lg:hidden absolute right-0 top-0 bottom-0 w-24 bg-gradient-to-l from-white via-white/80 to-transparent pointer-events-none flex items-center justify-end z-10 pb-2 -mb-2">
+          <button 
+            (click)="categoryScroll.scrollBy({left: 200, behavior: 'smooth'})"
+            class="pointer-events-auto flex items-center justify-center w-10 h-10 rounded-full bg-white/60 backdrop-blur hover:bg-white text-espresso-900 transition-all shadow-sm group border border-cream-200"
+            aria-label="Scroll categories right">
+            <svg class="w-5 h-5 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- Loading Skeleton -->
@@ -72,8 +91,18 @@
       </div>
     </div>
 
+    <!-- Empty State -->
+    <div *ngIf="!isLoading() && filteredPastries().length === 0" class="text-center py-20">
+      <svg class="mx-auto h-12 w-12 text-caramel-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+      <h3 class="text-lg font-serif text-espresso-900 mb-2">No pastries found</h3>
+      <p class="text-sm text-gray-500">We couldn't find any pastries in this category.</p>
+      <button (click)="setCategory('All')" class="mt-6 px-6 py-2 bg-espresso-900 text-cream-50 rounded-full text-xs font-semibold tracking-wider uppercase hover:bg-espresso-800 transition-colors shadow-sm">
+        View All Categories
+      </button>
+    </div>
+
     <!-- Product Grid -->
-    <div *ngIf="!isLoading()" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+    <div *ngIf="!isLoading() && filteredPastries().length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
       <div *ngFor="let pastry of filteredPastries()" (click)="goToProduct(pastry.sampleProductId)" class="group cursor-pointer flex flex-col h-full bg-cream-50 shadow-sm hover:shadow-xl transition-shadow duration-300 rounded-sm overflow-hidden border border-cream-200">
         
         <!-- Image Container with Fallback -->
@@ -84,7 +113,7 @@
           </div>
 
           <!-- Actual Image -->
-          <img *ngIf="!hasImageFailed(pastry.image)" 
+          <img *ngIf="!hasImageFailed(pastry.image)" loading="lazy" 
                [src]="pastry.image" 
                [alt]="pastry.groupName"
                (error)="onImageError($event, pastry.image)"

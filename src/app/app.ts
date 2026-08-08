@@ -1,5 +1,7 @@
-import { Component, signal, inject } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { Component, signal, inject, OnInit } from '@angular/core';
+import { RouterOutlet, Router, NavigationEnd, ActivatedRoute } from '@angular/router';
+import { filter, map, mergeMap } from 'rxjs';
+import { SeoService } from './services/seo.service';
 import { Navbar } from './components/navbar/navbar';
 import { Hero } from './components/hero/hero';
 import { SignaturePastries } from './components/signature-pastries/signature-pastries';
@@ -17,7 +19,27 @@ import { CartService } from './services/cart.service';
   templateUrl: './app.html',
   styleUrl: './app.css',
 })
-export class App {
+export class App implements OnInit {
   protected readonly title = signal('mq-pastries');
   protected cartService = inject(CartService);
+  private router = inject(Router);
+  private activatedRoute = inject(ActivatedRoute);
+  private seoService = inject(SeoService);
+
+  ngOnInit() {
+    this.router.events.pipe(
+      filter((event) => event instanceof NavigationEnd),
+      map(() => this.activatedRoute),
+      map((route) => {
+        while (route.firstChild) route = route.firstChild;
+        return route;
+      }),
+      filter((route) => route.outlet === 'primary'),
+      mergeMap((route) => route.data)
+    ).subscribe((data) => {
+      if (data['seo']) {
+        this.seoService.updateSeoTags(data['seo']);
+      }
+    });
+  }
 }

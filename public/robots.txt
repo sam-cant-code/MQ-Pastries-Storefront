@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /order-success
+Disallow: /track-order/
+
+Sitemap: https://[FINAL_DOMAIN_PLACEHOLDER].com/sitemap.xml

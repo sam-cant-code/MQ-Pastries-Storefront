@@ -30,7 +30,7 @@
 
     <!-- Items List -->
     <div *ngFor="let item of cartService.getItems()" class="flex gap-4 items-center bg-white border border-gray-100 p-3 rounded-lg shadow-sm">
-      <img *ngIf="item.image" [src]="item.image" class="w-16 h-16 object-cover rounded bg-cream-50">
+      <img *ngIf="item.image" [src]="item.image" loading="lazy" class="w-16 h-16 object-cover rounded bg-cream-50">
       <div *ngIf="!item.image" class="w-16 h-16 bg-cream-100 rounded flex items-center justify-center text-caramel-300">
         <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
       </div>
@@ -40,12 +40,25 @@
         <p class="text-sm font-semibold text-gray-700 mt-1">₹{{ item.price }}</p>
       </div>
       <!-- Controls -->
-      <div class="flex items-center gap-3 mt-2">
-        <span class="text-xs font-semibold text-gray-500">Qty: {{ item.quantity }}</span>
-        <button (click)="removeItem(item.cartId)" class="text-gray-400 hover:text-red-500 transition-colors p-1" title="Remove Item">
+      <div class="flex items-center mt-3">
+        <!-- Quantity Adjuster -->
+        <div class="flex items-center border border-gray-200 rounded-md bg-white shrink-0">
+          <button (click)="cartService.updateQuantity(item.cartId, item.quantity - 1)" 
+                  class="px-2 py-1 text-gray-500 hover:text-espresso-900 hover:bg-cream-50 transition-colors rounded-l-md">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"/></svg>
+          </button>
+          <span class="text-xs font-semibold text-espresso-900 w-6 text-center select-none">{{ item.quantity }}</span>
+          <button (click)="cartService.updateQuantity(item.cartId, item.quantity + 1)" 
+                  class="px-2 py-1 text-gray-500 hover:text-espresso-900 hover:bg-cream-50 transition-colors rounded-r-md">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+          </button>
+        </div>
+        
+        <button (click)="removeItem(item.cartId)" class="text-gray-400 hover:text-red-500 transition-colors p-1.5 ml-2 shrink-0" title="Remove Item">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
         </button>
-        <button (click)="modifyItem(item.cartId, item.productId)" class="text-[10px] font-bold uppercase tracking-wider text-caramel-600 hover:text-espresso-900 transition-colors ml-auto">
+        
+        <button (click)="modifyItem(item.cartId, item.productId)" class="text-[10px] font-bold uppercase tracking-wider text-caramel-600 hover:text-espresso-900 transition-colors ml-auto shrink-0">
           Modify
         </button>
       </div>
@@ -85,28 +98,28 @@
         </div>
 
         <div class="relative">
-          <input type="text" formControlName="customerName" id="customerName" class="block px-2.5 pb-2.5 pt-5 w-full text-sm text-gray-900 bg-white rounded-md border border-gray-300 appearance-none focus:outline-none focus:ring-0 focus:border-caramel-500 peer transition-colors" placeholder=" " />
+          <input type="text" formControlName="customerName" id="customerName" autocomplete="name" class="block px-2.5 pb-2.5 pt-5 w-full text-sm text-gray-900 bg-white rounded-md border border-gray-300 appearance-none focus:outline-none focus:ring-0 focus:border-caramel-500 peer transition-colors" placeholder=" " />
           <label for="customerName" class="absolute text-sm text-gray-500 duration-300 transform -translate-y-3 scale-75 top-4 z-10 origin-[0] start-2.5 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-3 peer-focus:text-caramel-600">Full Name</label>
         </div>
         <div class="relative">
-          <input type="email" formControlName="email" id="email" class="block px-2.5 pb-2.5 pt-5 w-full text-sm text-gray-900 bg-white rounded-md border border-gray-300 appearance-none focus:outline-none focus:ring-0 focus:border-caramel-500 peer transition-colors" placeholder=" " />
+          <input type="email" formControlName="email" id="email" autocomplete="email" class="block px-2.5 pb-2.5 pt-5 w-full text-sm text-gray-900 bg-white rounded-md border border-gray-300 appearance-none focus:outline-none focus:ring-0 focus:border-caramel-500 peer transition-colors" placeholder=" " />
           <label for="email" class="absolute text-sm text-gray-500 duration-300 transform -translate-y-3 scale-75 top-4 z-10 origin-[0] start-2.5 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-3 peer-focus:text-caramel-600">Email Address</label>
           <p *ngIf="checkoutForm.get('email')?.invalid && checkoutForm.get('email')?.touched" class="text-xs text-red-500 mt-1">Please enter a valid email address.</p>
         </div>
         <div class="relative">
-          <input type="tel" formControlName="phone" id="phone" class="block px-2.5 pb-2.5 pt-5 w-full text-sm text-gray-900 bg-white rounded-md border border-gray-300 appearance-none focus:outline-none focus:ring-0 focus:border-caramel-500 peer transition-colors" placeholder=" " />
+          <input type="tel" formControlName="phone" id="phone" autocomplete="tel" class="block px-2.5 pb-2.5 pt-5 w-full text-sm text-gray-900 bg-white rounded-md border border-gray-300 appearance-none focus:outline-none focus:ring-0 focus:border-caramel-500 peer transition-colors" placeholder=" " />
           <label for="phone" class="absolute text-sm text-gray-500 duration-300 transform -translate-y-3 scale-75 top-4 z-10 origin-[0] start-2.5 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-3 peer-focus:text-caramel-600">Phone Number</label>
           <p *ngIf="checkoutForm.get('phone')?.invalid && checkoutForm.get('phone')?.touched" class="text-xs text-red-500 mt-1">Please enter a valid 10-digit mobile number.</p>
         </div>
 
         <ng-container *ngIf="!checkoutForm.value.isPickup">
           <div class="relative">
-            <input type="text" formControlName="pincode" id="pincode" class="block px-2.5 pb-2.5 pt-5 w-full text-sm text-gray-900 bg-white rounded-md border border-gray-300 appearance-none focus:outline-none focus:ring-0 focus:border-caramel-500 peer transition-colors" placeholder=" " />
+            <input type="text" formControlName="pincode" id="pincode" autocomplete="postal-code" class="block px-2.5 pb-2.5 pt-5 w-full text-sm text-gray-900 bg-white rounded-md border border-gray-300 appearance-none focus:outline-none focus:ring-0 focus:border-caramel-500 peer transition-colors" placeholder=" " />
             <label for="pincode" class="absolute text-sm text-gray-500 duration-300 transform -translate-y-3 scale-75 top-4 z-10 origin-[0] start-2.5 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-3 peer-focus:text-caramel-600">Pincode (Delivery)</label>
             <p *ngIf="checkoutForm.get('pincode')?.invalid && checkoutForm.get('pincode')?.touched" class="text-xs text-red-500 mt-1">Must be a valid Bangalore pincode (e.g. 560001)</p>
           </div>
           <div class="relative">
-            <textarea formControlName="address" id="address" rows="3" class="block px-2.5 pb-2.5 pt-5 w-full text-sm text-gray-900 bg-white rounded-md border border-gray-300 appearance-none focus:outline-none focus:ring-0 focus:border-caramel-500 peer transition-colors resize-none" placeholder=" "></textarea>
+            <textarea formControlName="address" id="address" autocomplete="street-address" rows="3" class="block px-2.5 pb-2.5 pt-5 w-full text-sm text-gray-900 bg-white rounded-md border border-gray-300 appearance-none focus:outline-none focus:ring-0 focus:border-caramel-500 peer transition-colors resize-none" placeholder=" "></textarea>
             <label for="address" class="absolute text-sm text-gray-500 duration-300 transform -translate-y-3 scale-75 top-4 z-10 origin-[0] start-2.5 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-3 peer-focus:text-caramel-600">Delivery Address</label>
             <p *ngIf="checkoutForm.get('address')?.errors?.['invalidAddress']" class="text-xs text-red-500 mt-1">Delivery is not possible to this address or at this time.</p>
             <p *ngIf="checkoutForm.hasError('pincodeMismatch') && checkoutForm.get('address')?.touched && checkoutForm.get('pincode')?.touched" class="text-xs text-red-500 mt-1">The pincode in the address does not match the pincode field.</p>
@@ -183,7 +196,7 @@
   <div *ngIf="cartService.getItems().length > 0" class="p-6 bg-white border-t border-gray-100 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] shrink-0">
     
     <!-- Order Summary -->
-    <div class="space-y-2 mb-4 border-b border-gray-100 pb-4">
+    <div *ngIf="checkoutForm.valid" class="space-y-2 mb-4 border-b border-gray-100 pb-4">
       <div class="flex justify-between items-center text-gray-500 text-sm">
         <span>Subtotal</span>
         <span class="font-medium text-gray-900">₹{{ cartService.totalPrice() | number:'1.2-2' }}</span>
@@ -201,7 +214,7 @@
       </div>
     </div>
 
-    <div class="flex justify-between items-end mb-4">
+    <div *ngIf="checkoutForm.valid" class="flex justify-between items-end mb-4">
       <span class="text-gray-500 text-sm font-medium uppercase tracking-wider">Total</span>
       <span class="text-3xl font-serif text-espresso-900 font-bold leading-none">₹{{ cartService.totalPrice() + deliveryCost() | number:'1.2-2' }}</span>
     </div>
@@ -231,8 +244,8 @@
       <!-- Default state -->
       <ng-container *ngIf="!isProcessing() && verificationStatus() !== 'sending' && verificationStatus() !== 'sent'">
         <span class="flex items-center gap-2 text-lg">
-          Place Order & Pay ₹{{ cartService.totalPrice() + deliveryCost() | number:'1.2-2' }}
-          <svg class="w-5 h-5 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+          {{ checkoutForm.valid ? 'Place Order & Pay ₹' + (cartService.totalPrice() + deliveryCost() | number:'1.2-2') : 'Complete Details to Checkout' }}
+          <svg *ngIf="checkoutForm.valid" class="w-5 h-5 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
         </span>
       </ng-container>
     </button>

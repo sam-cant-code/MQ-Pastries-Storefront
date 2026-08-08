@@ -1,8 +1,9 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { CartService } from '../../services/cart.service';
+import { SeoService } from '../../services/seo.service';
 import { environment } from '../../../environments/environment';
 interface Variant {
   name: string;
@@ -47,6 +48,7 @@ export class ProductDetails implements OnInit {
   private router = inject(Router);
   private http = inject(HttpClient);
   private cartService = inject(CartService);
+  private seoService = inject(SeoService);
 
   isLoading = signal(true);
   productFamily = signal<Product[]>([]);
@@ -66,8 +68,22 @@ export class ProductDetails implements OnInit {
   );
 
   modifyCartId = signal<string | null>(null);
+  hasUnsavedChanges = signal(false);
 
   isEggless = signal(false);
+  isDescriptionExpanded = signal(false);
+
+  @HostListener('window:beforeunload', ['$event'])
+  unloadNotification($event: any) {
+    if (this.modifyCartId() && this.hasUnsavedChanges()) {
+      $event.returnValue = true;
+    }
+  }
+
+  toggleEggless() {
+    this.isEggless.set(!this.isEggless());
+    this.hasUnsavedChanges.set(true);
+  }
 
   ngOnInit() {
     this.route.queryParamMap.subscribe(params => {
@@ -131,6 +147,29 @@ export class ProductDetails implements OnInit {
 
         this.selectFlavor(mainProduct);
         this.fetchSuggestedProducts(mainProduct.groupName || mainProduct.name);
+        
+        this.seoService.updateSeoTags({
+          title: mainProduct.name,
+          description: mainProduct.description,
+          image: mainProduct.image,
+          url: `/product/${mainProduct.id}`
+        });
+
+        this.seoService.addJsonLd({
+          "@context": "https://schema.org/",
+          "@type": "Product",
+          "name": mainProduct.name,
+          "image": mainProduct.image,
+          "description": mainProduct.description,
+          "offers": {
+            "@type": "Offer",
+            "url": `${environment.siteUrl}/product/${mainProduct.id}`,
+            "priceCurrency": "INR",
+            "price": mainProduct.price,
+            "availability": "https://schema.org/InStock"
+          }
+        });
+
         this.isLoading.set(false);
       },
       error: (err) => {
@@ -185,6 +224,9 @@ export class ProductDetails implements OnInit {
   }
 
   selectFlavor(product: Product) {
+    if (this.selectedFlavor() && this.selectedFlavor()?.id !== product.id) {
+      this.hasUnsavedChanges.set(true);
+    }
     this.selectedFlavor.set(product);
     this.selectedMainImage.set(product.image);
   }
@@ -193,9 +235,44 @@ export class ProductDetails implements OnInit {
     this.selectedMainImage.set(imgUrl);
   }
 
+  getAllImages(): string[] {
+    const product = this.selectedFlavor();
+    if (!product) return [];
+    
+    const images: string[] = [];
+    if (product.image) images.push(product.image);
+    if (product.galleryImages && product.galleryImages.length > 0) {
+      images.push(...product.galleryImages);
+    }
+    return images;
+  }
+
+  nextImage(event: Event) {
+    event.stopPropagation();
+    const imgs = this.getAllImages();
+    if (imgs.length <= 1) return;
+    const currentIdx = imgs.indexOf(this.selectedMainImage());
+    const idx = currentIdx >= 0 ? currentIdx : 0;
+    const nextIdx = (idx + 1) % imgs.length;
+    this.selectedMainImage.set(imgs[nextIdx]);
+  }
+
+  prevImage(event: Event) {
+    event.stopPropagation();
+    const imgs = this.getAllImages();
+    if (imgs.length <= 1) return;
+    const currentIdx = imgs.indexOf(this.selectedMainImage());
+    const idx = currentIdx >= 0 ? currentIdx : 0;
+    const prevIdx = (idx - 1 + imgs.length) % imgs.length;
+    this.selectedMainImage.set(imgs[prevIdx]);
+  }
+
   onSizeChange(index: number) {
     const current = this.selectedFlavor();
     if (current && current.variants) {
+      if (current.selectedVariant !== current.variants[index]) {
+        this.hasUnsavedChanges.set(true);
+      }
       current.selectedVariant = current.variants[index];
     }
   }

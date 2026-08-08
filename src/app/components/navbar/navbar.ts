@@ -20,11 +20,13 @@ export class Navbar {
   this.router.events.pipe(
     filter(event => event instanceof NavigationEnd),
     map(() => this.router.url.includes('/product/') || 
-              this.router.url.includes('/allergens') || 
+              this.router.url.includes('/privacy-policy') ||
+              this.router.url.includes('/terms') ||
               this.router.url.includes('/accessibility'))
   ),
   { initialValue: this.router.url.includes('/product/') || 
-                  this.router.url.includes('/allergens') || 
+                  this.router.url.includes('/privacy-policy') ||
+                  this.router.url.includes('/terms') ||
                   this.router.url.includes('/accessibility') }
 );
 
