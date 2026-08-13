@@ -29,38 +29,41 @@
     </div>
 
     <!-- Items List -->
-    <div *ngFor="let item of cartService.getItems()" class="flex gap-4 items-center bg-white border border-gray-100 p-3 rounded-lg shadow-sm">
-      <img *ngIf="item.image" [src]="item.image" loading="lazy" class="w-16 h-16 object-cover rounded bg-cream-50">
-      <div *ngIf="!item.image" class="w-16 h-16 bg-cream-100 rounded flex items-center justify-center text-caramel-300">
+    <div *ngFor="let item of cartService.getItems()" class="flex gap-4 items-start bg-white border border-gray-100 p-3 rounded-lg shadow-sm">
+      <img *ngIf="item.image" [src]="item.image" loading="lazy" class="w-16 h-16 object-cover rounded bg-cream-50 shrink-0">
+      <div *ngIf="!item.image" class="w-16 h-16 bg-cream-100 rounded flex items-center justify-center text-caramel-300 shrink-0">
         <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
       </div>
-      <div class="flex-1">
-        <h4 class="font-serif text-espresso-900 leading-tight">{{ item.name }}</h4>
-        <p class="text-[10px] text-gray-500 font-medium uppercase tracking-wider mt-0.5">{{ item.variantName }}</p>
-        <p class="text-sm font-semibold text-gray-700 mt-1">₹{{ item.price }}</p>
-      </div>
-      <!-- Controls -->
-      <div class="flex items-center mt-3">
-        <!-- Quantity Adjuster -->
-        <div class="flex items-center border border-gray-200 rounded-md bg-white shrink-0">
-          <button (click)="cartService.updateQuantity(item.cartId, item.quantity - 1)" 
-                  class="px-2 py-1 text-gray-500 hover:text-espresso-900 hover:bg-cream-50 transition-colors rounded-l-md">
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"/></svg>
-          </button>
-          <span class="text-xs font-semibold text-espresso-900 w-6 text-center select-none">{{ item.quantity }}</span>
-          <button (click)="cartService.updateQuantity(item.cartId, item.quantity + 1)" 
-                  class="px-2 py-1 text-gray-500 hover:text-espresso-900 hover:bg-cream-50 transition-colors rounded-r-md">
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+      <div class="flex-1 min-w-0">
+        <div class="flex justify-between items-start gap-2">
+          <div class="min-w-0">
+            <h4 class="font-serif text-espresso-900 leading-tight truncate">{{ item.name }}</h4>
+            <p class="text-[10px] text-gray-500 font-medium uppercase tracking-wider mt-0.5 truncate">{{ item.variantName }}</p>
+            <p class="text-sm font-semibold text-gray-700 mt-1">₹{{ item.price }}</p>
+          </div>
+          <button (click)="removeItem(item.cartId)" class="text-gray-400 hover:text-red-500 transition-colors p-1 shrink-0" title="Remove Item">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
           </button>
         </div>
-        
-        <button (click)="removeItem(item.cartId)" class="text-gray-400 hover:text-red-500 transition-colors p-1.5 ml-2 shrink-0" title="Remove Item">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-        </button>
-        
-        <button (click)="modifyItem(item.cartId, item.productId)" class="text-[10px] font-bold uppercase tracking-wider text-caramel-600 hover:text-espresso-900 transition-colors ml-auto shrink-0">
-          Modify
-        </button>
+        <!-- Controls -->
+        <div class="flex items-center justify-between mt-3 w-full gap-2 flex-wrap">
+          <!-- Quantity Adjuster -->
+          <div class="flex items-center border border-gray-200 rounded-md bg-white shrink-0">
+            <button (click)="cartService.updateQuantity(item.cartId, item.quantity - 1)" 
+                    class="px-2 py-1 text-gray-500 hover:text-espresso-900 hover:bg-cream-50 transition-colors rounded-l-md">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"/></svg>
+            </button>
+            <span class="text-xs font-semibold text-espresso-900 w-6 text-center select-none">{{ item.quantity }}</span>
+            <button (click)="cartService.updateQuantity(item.cartId, item.quantity + 1)" 
+                    class="px-2 py-1 text-gray-500 hover:text-espresso-900 hover:bg-cream-50 transition-colors rounded-r-md">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            </button>
+          </div>
+          
+          <button (click)="modifyItem(item.cartId, item.productId)" class="text-[10px] font-bold uppercase tracking-wider text-caramel-600 hover:text-espresso-900 transition-colors shrink-0">
+            Modify
+          </button>
+        </div>
       </div>
     </div>
     
