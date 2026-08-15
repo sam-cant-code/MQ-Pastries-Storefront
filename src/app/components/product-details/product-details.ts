@@ -23,6 +23,7 @@ interface Product {
   hasEgglessOption?: boolean;
   variants?: Variant[];
   selectedVariant?: Variant;
+  allowCustomMessage?: boolean;
 }
 
 interface ProductGroupCard {
@@ -72,6 +73,12 @@ export class ProductDetails implements OnInit {
 
   isEggless = signal(false);
   isDescriptionExpanded = signal(false);
+  customMessage = signal<string>('');
+
+  updateCustomMessage(event: any) {
+    this.customMessage.set(event.target.value);
+    this.hasUnsavedChanges.set(true);
+  }
 
   @HostListener('window:beforeunload', ['$event'])
   unloadNotification($event: any) {
@@ -291,7 +298,8 @@ export class ProductDetails implements OnInit {
         variantToAdd.name += ' (Eggless)';
       }
 
-      this.cartService.addToCart(current, variantToAdd, 1);
+      this.cartService.addToCart(current, variantToAdd, 1, this.customMessage());
+      this.customMessage.set(''); // Clear it after adding
     }
   }
   

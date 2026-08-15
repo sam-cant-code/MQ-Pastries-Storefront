@@ -39,6 +39,7 @@
           <div class="min-w-0">
             <h4 class="font-serif text-espresso-900 leading-tight truncate">{{ item.name }}</h4>
             <p class="text-[10px] text-gray-500 font-medium uppercase tracking-wider mt-0.5 truncate">{{ item.variantName }}</p>
+            <p *ngIf="item.customMessage" class="text-xs text-caramel-600 italic mt-0.5 break-words line-clamp-2">"{{ item.customMessage }}"</p>
             <p class="text-sm font-semibold text-gray-700 mt-1">₹{{ item.price }}</p>
           </div>
           <button (click)="removeItem(item.cartId)" class="text-gray-400 hover:text-red-500 transition-colors p-1 shrink-0" title="Remove Item">

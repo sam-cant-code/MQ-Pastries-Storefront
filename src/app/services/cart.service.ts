@@ -8,6 +8,7 @@ export interface CartItem {
   price: number;
   quantity: number;
   image: string | null;
+  customMessage?: string;
 }
 
 @Injectable({
@@ -31,9 +32,12 @@ export class CartService {
 
   toastMessage = signal<{message: string, action: string} | null>(null);
 
-  addToCart(product: any, variant: any, quantity: number = 1) {
+  addToCart(product: any, variant: any, quantity: number = 1, customMessage?: string) {
     const items = [...this.cartItems()];
-    const cartId = `${product.id}-${variant.name}`;
+    let cartId = `${product.id}-${variant.name}`;
+    if (customMessage) {
+      cartId += `-${customMessage}`;
+    }
     const existing = items.find(i => i.cartId === cartId);
 
     if (existing) {
@@ -46,7 +50,8 @@ export class CartService {
         name: product.name,
         price: variant.price,
         quantity: quantity,
-        image: product.image
+        image: product.image,
+        customMessage: customMessage
       });
     }
 

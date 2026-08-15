@@ -142,6 +142,29 @@
           </div>
         </div>
 
+        <!-- Custom Message -->
+        <div *ngIf="selectedFlavor()?.allowCustomMessage" class="mb-8 lg:mb-12">
+          <h3 class="text-[13px] font-semibold uppercase tracking-wider text-espresso-900 mb-3 flex items-center gap-2">
+            Custom Message 
+            <span class="text-[10px] font-normal text-gray-400 normal-case bg-gray-100 px-2 py-0.5 rounded-full">Optional</span>
+          </h3>
+          <div class="relative group">
+            <input type="text" 
+                   [value]="customMessage()" 
+                   (input)="updateCustomMessage($event)" 
+                   placeholder="e.g. Happy Birthday, John!" 
+                   maxlength="40"
+                   class="w-full bg-white border border-gray-200 rounded-lg px-4 py-3 text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:border-caramel-400 focus:ring-1 focus:ring-caramel-400 transition-all duration-300 shadow-sm group-hover:border-gray-300">
+            <span class="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-400 font-medium">
+              {{ 40 - customMessage().length }} chars left
+            </span>
+          </div>
+          <p class="text-[11px] text-gray-500 mt-2 flex items-start gap-1">
+            <svg class="w-3.5 h-3.5 shrink-0 text-caramel-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            This message will be beautifully written on your cake with icing.
+          </p>
+        </div>
+
         <!-- Add to Cart -->
         <div class="mt-7 flex justify-center lg:justify-start w-full pb-6 lg:pb-0">
           <button (click)="addToCart()" 
