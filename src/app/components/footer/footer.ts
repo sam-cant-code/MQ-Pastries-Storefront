@@ -11,7 +11,8 @@ export class Footer {
   private router = inject(Router);
 
   goToSection(fragment: string) {
-    if (this.router.url.includes('/product/')) {
+    // If not on the homepage (URL is not exactly '/' or does not start with '/?'), navigate home first
+    if (this.router.url !== '/' && !this.router.url.startsWith('/?')) {
       this.router.navigate(['/']).then(() => {
         setTimeout(() => {
           const element = document.querySelector(fragment);
@@ -19,6 +20,7 @@ export class Footer {
         }, 100);
       });
     } else {
+      // Already on homepage, just scroll
       const element = document.querySelector(fragment);
       if (element) element.scrollIntoView({ behavior: 'smooth' });
     }

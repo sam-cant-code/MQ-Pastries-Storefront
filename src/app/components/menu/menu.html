@@ -40,29 +40,36 @@
 
     <!-- Search & Categories -->
     <div class="max-w-5xl mx-auto mb-16 px-4">
-      <div class="relative min-h-[48px] flex">
+      <div class="relative min-h-[48px] flex lg:justify-center">
         
         <!-- Category Filters (Pills) -->
-        <div #categoryScroll class="grid grid-rows-2 lg:grid-rows-1 grid-flow-col auto-cols-max gap-3 md:gap-4 overflow-x-auto w-full transition-all duration-700 ease-in-out relative pb-2 -mb-2 pr-16 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden scroll-smooth">
+        <div #categoryScroll class="grid grid-rows-2 grid-flow-col auto-cols-max overflow-x-auto lg:flex lg:flex-wrap lg:overflow-x-visible lg:justify-center gap-3 md:gap-4 w-full transition-all duration-700 ease-in-out relative pb-2 -mb-2 pr-16 lg:pr-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden scroll-smooth">
           
           <button 
             (click)="setCategory('All')"
             [class]="selectedCategory() === 'All' ? 'bg-espresso-900 text-cream-50' : 'bg-cream-100 text-espresso-900 hover:bg-caramel-100'"
-            class="shrink-0 px-5 md:px-6 py-2 rounded-full text-xs md:text-sm font-semibold tracking-wider uppercase transition-colors duration-300">
-            All
+            class="shrink-0 flex items-center justify-center px-4 py-1.5 md:px-5 md:py-2 rounded-full text-xs md:text-sm font-semibold tracking-wider uppercase transition-colors duration-300 self-center">
+            <span>All</span>
           </button>
           
           <ng-container *ngFor="let cat of categories()">
             <button 
               (click)="setCategory(cat.name)"
               [class]="selectedCategory() === cat.name ? 'bg-espresso-900 text-cream-50' : 'bg-cream-100 text-espresso-900 hover:bg-caramel-100'"
-              class="shrink-0 flex items-center gap-3 px-5 md:px-6 py-2 rounded-full text-xs md:text-sm font-semibold tracking-wider uppercase transition-colors duration-300">
+              class="shrink-0 flex items-center justify-center gap-2 md:gap-3 px-5 md:px-6 py-2 rounded-full text-xs md:text-sm font-semibold tracking-wider uppercase transition-colors duration-300">
+              <div class="w-7 h-7 md:w-8 md:h-8 flex items-center justify-center shrink-0">
+                <img [src]="getEmoji(cat.name)" [alt]="cat.name" 
+                     [style.transform]="'scale(' + getEmojiScale(cat.name) + ')'" 
+                     [class.brightness-0]="selectedCategory() === cat.name"
+                     [class.invert]="selectedCategory() === cat.name"
+                     class="w-full h-full object-contain transition-all duration-300" (error)="onEmojiError($event)">
+              </div>
               <span>{{ cat.name }}</span>
             </button>
           </ng-container>
         </div>
 
-        <!-- Scroll Arrow Overlay -->
+        <!-- Scroll Arrow Overlay (Mobile Only) -->
         <div class="lg:hidden absolute right-0 top-0 bottom-0 w-24 bg-gradient-to-l from-white via-white/80 to-transparent pointer-events-none flex items-center justify-end z-10 pb-2 -mb-2">
           <button 
             (click)="categoryScroll.scrollBy({left: 200, behavior: 'smooth'})"

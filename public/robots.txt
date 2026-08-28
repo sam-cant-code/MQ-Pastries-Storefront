@@ -3,4 +3,4 @@ Allow: /
 Disallow: /order-success
 Disallow: /track-order/
 
-Sitemap: https://[FINAL_DOMAIN_PLACEHOLDER].com/sitemap.xml
+Sitemap: https://mqpastries.netlify.app/sitemap.xml

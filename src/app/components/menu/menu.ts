@@ -33,6 +33,26 @@ const FLAVOR_PREVIEW_LIMIT = 3;
 const INITIAL_VISIBLE_ROWS = 12; // ~3 rows at 4 columns
 const LOAD_MORE_STEP = 8; // ~2 rows at 4 columns
 
+const CATEGORY_EMOJIS: Record<string, string> = {
+  'Brownies': '/emojis/brownies.png',
+  'Tea Cakes': '/emojis/tea_cakes.png',
+  'Cookies': '/emojis/cookies.png',
+  'Cakes': '/emojis/cakes.png',
+  'Savories': '/emojis/savories.png',
+  'Special': '/emojis/special.png',
+  'All': '/emojis/all.png'
+};
+
+const CATEGORY_SCALES: Record<string, number> = {
+  'Brownies': 1.7,
+  'Tea Cakes': 1.3,
+  'Cookies': 0.9,
+  'Cakes': 1.35,
+  'Savories': 0.9,
+  'Special': 1,
+  'All': 1
+};
+
 @Component({
   selector: 'app-menu',
   standalone: true,
@@ -43,6 +63,14 @@ export class Menu implements OnInit {
   private http = inject(HttpClient);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
+  
+  getEmoji(categoryName: string): string {
+    return CATEGORY_EMOJIS[categoryName] || '/emojis/default.png'; // default to default image
+  }
+  
+  getEmojiScale(categoryName: string): number {
+    return CATEGORY_SCALES[categoryName] || 1;
+  }
   
   categories = signal<{name: string}[]>([]);
   pastries = signal<ProductGroupCard[]>([]);
@@ -149,6 +177,10 @@ export class Menu implements OnInit {
   onImageError(event: any, imageSrc: string) {
     event.target.style.display = 'none';
     this.failedImages.add(imageSrc);
+  }
+
+  onEmojiError(event: any) {
+    event.target.style.display = 'none';
   }
 
   hasImageFailed(imageSrc: string): boolean {
