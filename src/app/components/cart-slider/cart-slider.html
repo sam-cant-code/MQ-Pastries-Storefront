@@ -223,6 +223,12 @@
       <span class="text-3xl font-serif text-espresso-900 font-bold leading-none">₹{{ cartService.totalPrice() + deliveryCost() | number:'1.2-2' }}</span>
     </div>
     
+    <!-- Verification Notice -->
+    <div *ngIf="verificationStatus() === 'sent'" class="mb-4 p-3 bg-blue-50 rounded-lg text-xs text-blue-800 border border-blue-200 flex items-start gap-2 shadow-sm animate-pulse">
+      <svg class="w-4 h-4 mt-0.5 shrink-0 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+      <span>We've sent a verification link to your email. Please click it to continue with payment. <strong>If you don't see it, please check your spam or junk folder!</strong></span>
+    </div>
+
     <button (click)="processCheckout()" 
             [disabled]="checkoutForm.invalid || isProcessing() || verificationStatus() === 'sent' || verificationStatus() === 'sending'"
             class="w-full bg-espresso-900 text-white font-semibold py-4 rounded-md shadow-md hover:bg-caramel-600 focus:outline-none focus:ring-2 focus:ring-caramel-500 focus:ring-offset-2 transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed flex justify-center items-center gap-2 relative overflow-hidden group">
