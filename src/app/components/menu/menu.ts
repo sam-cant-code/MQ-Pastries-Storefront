@@ -1,4 +1,4 @@
-import { Component, signal, computed, inject, OnInit } from '@angular/core';
+import { Component, signal, computed, inject, OnInit, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -78,14 +78,25 @@ export class Menu implements OnInit {
   
   failedImages = new Set<string>();
   selectedCategory = signal<string>('All');
+  searchQuery = signal<string>('');
+  isSearchFocused = signal<boolean>(false);
   visibleCount = signal<number>(INITIAL_VISIBLE_ROWS);
 
   allFilteredPastries = computed(() => {
     const category = this.selectedCategory();
+    const query = this.searchQuery().toLowerCase().trim();
     let result = this.pastries();
     
     if (category !== 'All') {
       result = result.filter(p => p.category === category);
+    }
+    
+    if (query) {
+      result = result.filter(p => 
+        p.groupName.toLowerCase().includes(query) || 
+        p.category.toLowerCase().includes(query) ||
+        p.flavors.some(f => f.toLowerCase().includes(query))
+      );
     }
     
     return result;
@@ -98,6 +109,46 @@ export class Menu implements OnInit {
   hasMorePastries = computed(() =>
     this.visibleCount() < this.allFilteredPastries().length
   );
+
+  isStickyHidden = signal(false);
+  private lastScrollPosition = 0;
+
+  @HostListener('window:scroll', [])
+  onWindowScroll() {
+    // Only apply auto-hide on mobile screens (lg is 1024px in Tailwind)
+    if (window.innerWidth >= 1024) {
+      if (this.isStickyHidden()) this.isStickyHidden.set(false);
+      return;
+    }
+
+    // Do not hide if the user is currently typing in the search bar
+    if (this.isSearchFocused()) {
+      if (this.isStickyHidden()) this.isStickyHidden.set(false);
+      this.lastScrollPosition = window.scrollY;
+      return;
+    }
+
+    const currentScroll = window.scrollY;
+    
+    // Calculate where the menu actually starts so we don't hide it prematurely
+    let triggerPoint = 300;
+    const menuEl = document.getElementById('menu-layout');
+    if (menuEl) {
+      triggerPoint = menuEl.getBoundingClientRect().top + window.scrollY;
+    }
+
+    // Use a threshold so tiny movements don't hide/show the menu
+    const scrollDelta = currentScroll - this.lastScrollPosition;
+
+    // Only hide if we are scrolling down significantly, and we've scrolled past the menu's top position
+    if (currentScroll > triggerPoint && scrollDelta > 15) {
+      this.isStickyHidden.set(true);
+      this.lastScrollPosition = currentScroll;
+    } else if (scrollDelta < -15 || currentScroll <= triggerPoint) {
+      this.isStickyHidden.set(false);
+      this.lastScrollPosition = currentScroll;
+    }
+  }
 
   ngOnInit() {
     // Pick up a category passed in via query params (e.g. from a product page breadcrumb)
@@ -167,6 +218,11 @@ export class Menu implements OnInit {
 
   setCategory(category: string) {
     this.selectedCategory.set(category);
+    this.visibleCount.set(INITIAL_VISIBLE_ROWS);
+  }
+
+  updateSearch(event: Event) {
+    this.searchQuery.set((event.target as HTMLInputElement).value);
     this.visibleCount.set(INITIAL_VISIBLE_ROWS);
   }
 

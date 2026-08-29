@@ -142,6 +142,40 @@
           </div>
         </div>
 
+        <!-- Packing Options -->
+        <div *ngIf="selectedFlavor()?.hasPackingOption && selectedFlavor()!.packingOptions && selectedFlavor()!.packingOptions!.length > 0" class="mb-8 lg:mb-12 border-t border-cream-200 pt-5">
+          <h3 class="text-[13px] font-semibold uppercase tracking-wider text-espresso-900 mb-3 flex items-center gap-2">
+            Packing Type 
+            <span class="text-[10px] font-normal text-gray-400 normal-case bg-gray-100 px-2 py-0.5 rounded-full">Optional</span>
+          </h3>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <button *ngFor="let p of selectedFlavor()?.packingOptions"
+                    (click)="selectedPacking()?.name === p.name ? selectPacking(null) : selectPacking(p)"
+                    [class]="selectedPacking()?.name === p.name ? 'border-espresso-900 bg-cream-100 shadow-md ring-1 ring-espresso-900' : 'border-gray-200 bg-white hover:border-caramel-400 hover:bg-gray-50'"
+                    class="relative flex gap-3 p-3 border rounded-lg text-left transition-all duration-300">
+              
+              <!-- Check icon for selected state -->
+              <div *ngIf="selectedPacking()?.name === p.name" class="absolute top-2 right-2 text-espresso-900">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+              </div>
+
+              <!-- Packing Image -->
+              <div *ngIf="p.image" class="w-16 h-16 rounded overflow-hidden shrink-0 bg-cream-200">
+                <img [src]="p.image" class="w-full h-full object-cover" [alt]="p.name">
+              </div>
+              <div *ngIf="!p.image" class="w-16 h-16 rounded bg-cream-100 flex items-center justify-center text-caramel-300 shrink-0 border border-cream-200">
+                <svg class="w-8 h-8 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+              </div>
+
+              <!-- Packing Details -->
+              <div class="flex-1 min-w-0 pr-4 flex flex-col justify-center">
+                <div class="text-sm font-semibold text-espresso-900 truncate">{{ p.name }}</div>
+                <div *ngIf="p.description" class="text-xs text-gray-500 mt-1 line-clamp-2 leading-tight">{{ p.description }}</div>
+              </div>
+            </button>
+          </div>
+        </div>
+
         <!-- Custom Message -->
         <div *ngIf="selectedFlavor()?.allowCustomMessage" class="mb-8 lg:mb-12">
           <h3 class="text-[13px] font-semibold uppercase tracking-wider text-espresso-900 mb-3 flex items-center gap-2">

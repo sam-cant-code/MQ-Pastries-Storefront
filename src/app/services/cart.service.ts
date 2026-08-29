@@ -9,6 +9,7 @@ export interface CartItem {
   quantity: number;
   image: string | null;
   customMessage?: string;
+  packingName?: string;
 }
 
 @Injectable({
@@ -32,11 +33,14 @@ export class CartService {
 
   toastMessage = signal<{message: string, action: string} | null>(null);
 
-  addToCart(product: any, variant: any, quantity: number = 1, customMessage?: string) {
+  addToCart(product: any, variant: any, quantity: number = 1, customMessage?: string, packingOptionName?: string) {
     const items = [...this.cartItems()];
     let cartId = `${product.id}-${variant.name}`;
     if (customMessage) {
       cartId += `-${customMessage}`;
+    }
+    if (packingOptionName) {
+      cartId += `-${packingOptionName}`;
     }
     const existing = items.find(i => i.cartId === cartId);
 
@@ -51,7 +55,8 @@ export class CartService {
         price: variant.price,
         quantity: quantity,
         image: product.image,
-        customMessage: customMessage
+        customMessage: customMessage,
+        packingName: packingOptionName
       });
     }
 

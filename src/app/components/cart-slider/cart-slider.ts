@@ -234,7 +234,8 @@ export class CartSlider implements OnDestroy {
       items: this.cartService.getItems().map(item => ({
         productId: item.productId,
         quantity: item.quantity,
-        variantName: item.variantName
+        variantName: item.variantName,
+        customMessage: item.customMessage
       }))
     };
 

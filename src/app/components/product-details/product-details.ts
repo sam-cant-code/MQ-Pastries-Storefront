@@ -21,6 +21,8 @@ interface Product {
   groupName?: string;
   galleryImages?: string[];
   hasEgglessOption?: boolean;
+  hasPackingOption?: boolean;
+  packingOptions?: { name: string; image?: string; description?: string }[];
   variants?: Variant[];
   selectedVariant?: Variant;
   allowCustomMessage?: boolean;
@@ -74,9 +76,15 @@ export class ProductDetails implements OnInit {
   isEggless = signal(false);
   isDescriptionExpanded = signal(false);
   customMessage = signal<string>('');
+  selectedPacking = signal<{name: string, image?: string, description?: string} | null>(null);
 
   updateCustomMessage(event: any) {
     this.customMessage.set(event.target.value);
+    this.hasUnsavedChanges.set(true);
+  }
+
+  selectPacking(packing: any) {
+    this.selectedPacking.set(packing);
     this.hasUnsavedChanges.set(true);
   }
 
@@ -298,8 +306,10 @@ export class ProductDetails implements OnInit {
         variantToAdd.name += ' (Eggless)';
       }
 
-      this.cartService.addToCart(current, variantToAdd, 1, this.customMessage());
+      const packing = this.selectedPacking();
+      this.cartService.addToCart(current, variantToAdd, 1, this.customMessage(), packing?.name);
       this.customMessage.set(''); // Clear it after adding
+      this.selectedPacking.set(null);
     }
   }
   
