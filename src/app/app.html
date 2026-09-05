@@ -1,5 +1,7 @@
 <main class="relative bg-cream-50 min-h-screen text-charcoal">
-  <app-navbar></app-navbar>
+  @if (!router.url.includes('/checkout')) {
+    <app-navbar></app-navbar>
+  }
   <router-outlet></router-outlet>
   <app-footer></app-footer>
 </main>

@@ -26,6 +26,7 @@ interface Product {
   variants?: Variant[];
   selectedVariant?: Variant;
   allowCustomMessage?: boolean;
+  isCreamBased?: boolean;
 }
 
 interface ProductGroupCard {

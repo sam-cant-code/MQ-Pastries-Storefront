@@ -24,7 +24,6 @@ interface Order {
   status: string;
   address: string;
   pincode: string;
-  borzoOrderId: string | null;
   pickup: boolean;
   items: OrderItem[];
   createdAt: string;
@@ -53,22 +52,24 @@ interface Order {
 
           <div *ngIf="order() as o" class="space-y-8">
             <!-- Status Timeline -->
-            <div class="relative py-4">
-              <div class="absolute inset-0 flex items-center justify-center" aria-hidden="true">
-                <div class="h-1 w-full bg-gray-200 rounded-full"></div>
-                <div class="absolute h-1 left-0 bg-[#8b7355] rounded-full transition-all duration-500"
-                     [style.width]="getProgressWidth(o.status, o.pickup)"></div>
-              </div>
-              
-              <div class="relative flex justify-between">
-                <div *ngFor="let step of getSteps(o)" class="flex flex-col items-center">
-                  <div class="h-8 w-8 sm:h-10 sm:w-10 rounded-full flex items-center justify-center border-2 sm:border-4 border-white z-10 transition-colors duration-300 text-xs sm:text-base"
-                       [ngClass]="isStepCompleted(step.status, o.status, o.pickup) ? 'bg-[#8b7355] text-white' : 'bg-gray-200 text-gray-400'">
-                    <i [class]="step.icon"></i>
-                  </div>
-                  <div class="mt-2 text-[9px] sm:text-xs font-semibold uppercase tracking-wide sm:tracking-wider text-center max-w-[65px] sm:max-w-[80px] leading-tight"
-                       [ngClass]="isStepCompleted(step.status, o.status, o.pickup) ? 'text-[#8b7355]' : 'text-gray-400'">
-                    {{ step.label }}
+            <div class="relative py-4 overflow-x-auto">
+              <div class="min-w-[600px] relative px-4">
+                <div class="absolute inset-0 flex items-center justify-center px-8" aria-hidden="true">
+                  <div class="h-1 w-full bg-gray-200 rounded-full"></div>
+                  <div class="absolute h-1 left-8 bg-[#8b7355] rounded-full transition-all duration-500"
+                       [style.width]="getProgressWidth(o)"></div>
+                </div>
+                
+                <div class="relative flex justify-between">
+                  <div *ngFor="let step of getSteps(o)" class="flex flex-col items-center">
+                    <div class="h-8 w-8 sm:h-10 sm:w-10 rounded-full flex items-center justify-center border-2 sm:border-4 border-white z-10 transition-colors duration-300 text-xs sm:text-base"
+                         [ngClass]="isStepCompleted(step, o) ? 'bg-[#8b7355] text-white' : 'bg-gray-200 text-gray-400'">
+                      <i [class]="step.icon"></i>
+                    </div>
+                    <div class="mt-2 text-[9px] sm:text-xs font-semibold uppercase tracking-wide sm:tracking-wider text-center max-w-[65px] sm:max-w-[80px] leading-tight"
+                         [ngClass]="isStepCompleted(step, o) ? 'text-[#8b7355]' : 'text-gray-400'">
+                      {{ step.label }}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -130,15 +131,6 @@ interface Order {
                 <a href="mailto:mqpastries@gmail.com" class="text-[#8b7355] font-medium text-[13px] sm:text-sm mt-2 inline-block hover:underline">Contact Support</a>
               </div>
             </div>
-            
-            <!-- Borzo Delivery Partner (Optional Display) -->
-            <div *ngIf="o.status === 'OUT_FOR_DELIVERY' || o.status === 'DELIVERED'" class="bg-blue-50 border border-blue-100 p-4 rounded-xl flex items-start space-x-3">
-               <i class="fas fa-truck text-blue-500 mt-1 text-lg"></i>
-               <div>
-                  <h4 class="font-semibold text-blue-900">Delivery Partner</h4>
-                  <p class="text-blue-800 text-sm mt-1">Your order is being handled by Borzo Delivery.</p>
-               </div>
-            </div>
 
           </div>
         </div>
@@ -158,19 +150,28 @@ export class TrackOrder implements OnInit, OnDestroy {
   error = signal<string | null>(null);
 
   getSteps(order: Order) {
-    return [
-      { status: 'PAID', label: 'Confirmed', icon: 'fas fa-check' },
-      { status: 'PREPARING', label: 'Preparing', icon: 'fas fa-cookie-bite' },
-      { status: 'READY_FOR_PICKUP', label: 'Ready for Pickup', icon: 'fas fa-box-open' },
-      { status: 'DELIVERED', label: 'Picked Up', icon: 'fas fa-hand-holding-heart' }
-    ];
+    if (order.pickup) {
+      return [
+        { id: 'PAID', label: 'Processing', icon: 'fas fa-cog' },
+        { id: 'PREPARING', label: 'Preparing', icon: 'fas fa-cookie-bite' },
+        { id: 'READY_FOR_PICKUP', label: 'Ready for Pickup', icon: 'fas fa-box-open' },
+        { id: 'DELIVERED', label: 'Picked Up', icon: 'fas fa-hand-holding-heart' }
+      ];
+    } else {
+      // Normal delivery steps
+      return [
+        { id: 'PAID', label: 'Processing', icon: 'fas fa-cog' },
+        { id: 'PREPARING', label: 'Preparing', icon: 'fas fa-cookie-bite' },
+        { id: 'OUT_FOR_DELIVERY', label: 'Out for Delivery', icon: 'fas fa-truck' },
+        { id: 'DELIVERED', label: 'Delivered', icon: 'fas fa-home' }
+      ];
+    }
   }
 
   ngOnInit() {
     this.orderId = this.route.snapshot.paramMap.get('id') || '';
     if (this.orderId) {
       this.fetchOrder();
-      // Poll every 1 minute so admin changes reflect without overwhelming the server
       this.pollingInterval = setInterval(() => {
         this.fetchOrder(true);
       }, 60000);
@@ -202,27 +203,29 @@ export class TrackOrder implements OnInit, OnDestroy {
     });
   }
 
-  isStepCompleted(stepStatus: string, currentStatus: string, isPickup: boolean): boolean {
-    if (currentStatus === 'FAILED') return false;
-    if (currentStatus === 'DELIVERED') return true;
+  isStepCompleted(step: any, order: Order): boolean {
+    if (order.status === 'FAILED' || order.status === 'CANCELLED') return false;
+    if (order.status === 'DELIVERED' || order.status === 'COMPLETED') return true;
     
-    // We treat OUT_FOR_DELIVERY same as READY_FOR_PICKUP in timeline just in case legacy orders use it
-    if (currentStatus === 'OUT_FOR_DELIVERY') currentStatus = 'READY_FOR_PICKUP';
+    let orderStatuses = ['PENDING', 'PAID', 'PREPARING', order.pickup ? 'READY_FOR_PICKUP' : 'OUT_FOR_DELIVERY', 'DELIVERED'];
     
-    const orderStatuses = ['PENDING', 'PAID', 'PREPARING', 'READY_FOR_PICKUP', 'DELIVERED'];
-      
-    const stepIdx = orderStatuses.indexOf(stepStatus);
+    const stepIdx = orderStatuses.indexOf(step.id);
+    // Treat PICKED_UP same as READY_FOR_PICKUP for timeline
+    let currentStatus = order.status;
+    if (currentStatus === 'PICKED_UP') currentStatus = 'READY_FOR_PICKUP';
+    
     const currentIdx = orderStatuses.indexOf(currentStatus);
+    
     return stepIdx <= currentIdx;
   }
 
-  getProgressWidth(currentStatus: string, isPickup: boolean): string {
-    if (currentStatus === 'FAILED' || currentStatus === 'PENDING') return '0%';
+  getProgressWidth(order: Order): string {
+    if (order.status === 'FAILED' || order.status === 'CANCELLED' || order.status === 'PENDING') return '0%';
     
-    if (currentStatus === 'PAID') return '0%';
-    if (currentStatus === 'PREPARING') return '33%';
-    if (currentStatus === 'READY_FOR_PICKUP' || currentStatus === 'OUT_FOR_DELIVERY') return '66%';
-    if (currentStatus === 'DELIVERED') return '100%';
+    if (order.status === 'PAID') return '0%';
+    if (order.status === 'PREPARING') return '33%';
+    if (order.status === 'READY_FOR_PICKUP' || order.status === 'OUT_FOR_DELIVERY' || order.status === 'PICKED_UP') return '66%';
+    if (order.status === 'DELIVERED' || order.status === 'COMPLETED') return '100%';
     
     return '0%';
   }

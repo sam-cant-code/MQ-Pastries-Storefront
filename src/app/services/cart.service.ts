@@ -10,6 +10,7 @@ export interface CartItem {
   image: string | null;
   customMessage?: string;
   packingName?: string;
+  isCreamBased?: boolean;
 }
 
 @Injectable({
@@ -56,7 +57,8 @@ export class CartService {
         quantity: quantity,
         image: product.image,
         customMessage: customMessage,
-        packingName: packingOptionName
+        packingName: packingOptionName,
+        isCreamBased: product.isCreamBased
       });
     }
 

@@ -22,7 +22,7 @@ import { CartService } from './services/cart.service';
 export class App implements OnInit {
   protected readonly title = signal('mq-pastries');
   protected cartService = inject(CartService);
-  private router = inject(Router);
+  protected router = inject(Router);
   private activatedRoute = inject(ActivatedRoute);
   private seoService = inject(SeoService);
 

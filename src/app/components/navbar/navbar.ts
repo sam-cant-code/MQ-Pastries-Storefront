@@ -19,16 +19,24 @@ export class Navbar {
   isLightMode = toSignal(
   this.router.events.pipe(
     filter(event => event instanceof NavigationEnd),
-    map(() => this.router.url.includes('/product/') || 
-              this.router.url.includes('/privacy-policy') ||
-              this.router.url.includes('/terms') ||
-              this.router.url.includes('/accessibility'))
+    map(() => {
+      const path = this.router.url.split('?')[0].split('#')[0];
+      return path !== '/';
+    })
   ),
-  { initialValue: this.router.url.includes('/product/') || 
-                  this.router.url.includes('/privacy-policy') ||
-                  this.router.url.includes('/terms') ||
-                  this.router.url.includes('/accessibility') }
+  { initialValue: this.router.url.split('?')[0].split('#')[0] !== '/' }
 );
+
+  isCheckoutPage = toSignal(
+    this.router.events.pipe(
+      filter(event => event instanceof NavigationEnd),
+      map(() => {
+        const path = this.router.url.split('?')[0].split('#')[0];
+        return path === '/checkout';
+      })
+    ),
+    { initialValue: this.router.url.split('?')[0].split('#')[0] === '/checkout' }
+  );
 
   goHome(fragment?: string) {
     if (fragment) {

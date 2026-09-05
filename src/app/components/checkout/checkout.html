@@ -1,0 +1,258 @@
+<div class="min-h-[100dvh] md:h-[100dvh] bg-white md:bg-cream-50 relative py-0 md:py-4 px-0 sm:px-6 lg:px-8 flex items-start md:items-center justify-center">
+  <!-- Subtle decorative pattern background -->
+  <div class="absolute inset-0 opacity-[0.6] pointer-events-none hidden md:block"
+       style="background-image: url('/menu-pattern.png'); background-repeat: repeat; background-size: 1200px;">
+  </div>
+  
+  <div class="w-full max-w-5xl relative z-10 md:h-full md:max-h-[calc(100vh-2rem)] flex flex-col flex-1 md:flex-none">
+    <div class="bg-white md:shadow-xl md:rounded-xl overflow-hidden flex flex-col md:flex-row flex-1 min-h-0">
+      
+      <!-- Left Side (Form) -->
+      <div class="flex-1 flex flex-col min-w-0 md:border-r border-gray-100">
+        <!-- Header -->
+        <div class="px-4 md:px-5 py-3 border-b border-gray-100 bg-cream-50 flex items-center justify-between shrink-0 sticky top-0 z-20">
+          <h2 class="text-xl font-serif text-espresso-900 flex items-center gap-2">
+            Checkout Details
+          </h2>
+          <a routerLink="/" class="text-xs font-semibold text-caramel-600 hover:text-caramel-700 flex items-center gap-1 transition-colors">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+            Back to Menu
+          </a>
+        </div>
+
+        <div class="p-4 md:p-5 md:overflow-y-auto flex-1">
+          <div *ngIf="cartService.getItems().length > 0; else emptyCart">
+            <form [formGroup]="checkoutForm" class="space-y-4">
+              <!-- Delivery Method Toggle -->
+              <div class="flex p-1 bg-cream-50 rounded-lg border border-cream-100 mb-4 relative group">
+                <label class="flex-1 text-center py-2 px-3 rounded-md text-sm font-semibold cursor-pointer transition-colors"
+                       [ngClass]="!checkoutForm.value.isPickup ? 'bg-white shadow-sm text-espresso-900 border border-gray-200' : 'text-gray-500 hover:text-espresso-900'">
+                  <input type="radio" formControlName="isPickup" [value]="false" class="hidden">
+                  Delivery
+                </label>
+                <label class="flex-1 text-center py-2 px-3 rounded-md text-sm font-semibold cursor-pointer transition-colors"
+                       [ngClass]="checkoutForm.value.isPickup ? 'bg-white shadow-sm text-espresso-900 border border-gray-200' : 'text-gray-500 hover:text-espresso-900'">
+                  <input type="radio" formControlName="isPickup" [value]="true" class="hidden">
+                  Store Pickup
+                </label>
+              </div>
+
+              <div *ngIf="!checkoutForm.value.isPickup && hasCreamBasedItems()" class="mb-4 text-xs text-red-700 bg-red-50 p-3 rounded-md border border-red-200 flex items-start gap-2 shadow-sm">
+                <svg class="w-4 h-4 mt-0.5 shrink-0 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <span>Please note: You have chosen a cream-based product (<strong>{{ creamBasedItemNames() }}</strong>). We do not support courier delivery for cream-based items, so only standard delivery is available within Bangalore.</span>
+              </div>
+              
+              <div *ngIf="!checkoutForm.value.isPickup && !hasCreamBasedItems()" class="mb-4 text-xs text-caramel-700 bg-caramel-50 p-3 rounded-md border border-caramel-200 flex items-start gap-2 shadow-sm">
+                <svg class="w-4 h-4 mt-0.5 shrink-0 text-caramel-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <span>Please note: We only deliver within <strong>Bangalore</strong>. Courier takes 1-2 days, standard is same-day.</span>
+              </div>
+              
+              <div *ngIf="checkoutForm.value.isPickup" class="mb-4 text-xs text-caramel-700 bg-caramel-50 p-3 rounded-md border border-caramel-200 flex flex-col gap-2 shadow-sm">
+                <div class="flex items-start gap-2">
+                  <svg class="w-4 h-4 mt-0.5 shrink-0 text-caramel-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                  <span>Pick up location: <strong>Santara Magan Place 1 Rd, Hulimavu, Bengaluru, 560076</strong>.</span>
+                </div>
+                <div class="flex items-start gap-2 border-t border-caramel-200/60 pt-2 mt-1">
+                  <svg class="w-4 h-4 mt-0.5 shrink-0 text-caramel-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
+                  <span><strong>Please Note:</strong> Before coming to pick up, please call <strong>9940712586</strong> to confirm.</span>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="relative md:col-span-2">
+                  <input type="text" formControlName="customerName" id="customerName" autocomplete="name" class="block px-3 pb-2 pt-5 w-full text-sm text-gray-900 bg-white rounded-md border border-gray-300 appearance-none focus:outline-none focus:ring-0 focus:border-caramel-500 peer transition-colors" placeholder=" " />
+                  <label for="customerName" class="absolute text-xs text-gray-500 duration-300 transform -translate-y-3 scale-75 top-4 z-10 origin-[0] start-3 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-3 peer-focus:text-caramel-600">Full Name</label>
+                </div>
+                <div class="relative">
+                  <input type="email" formControlName="email" id="email" autocomplete="email" class="block px-3 pb-2 pt-5 w-full text-sm text-gray-900 bg-white rounded-md border border-gray-300 appearance-none focus:outline-none focus:ring-0 focus:border-caramel-500 peer transition-colors" placeholder=" " />
+                  <label for="email" class="absolute text-xs text-gray-500 duration-300 transform -translate-y-3 scale-75 top-4 z-10 origin-[0] start-3 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-3 peer-focus:text-caramel-600">Email Address</label>
+                  <p *ngIf="checkoutForm.get('email')?.invalid && checkoutForm.get('email')?.touched" class="text-[10px] text-red-500 mt-1">Please enter a valid email address.</p>
+                </div>
+                <div class="relative">
+                  <input type="tel" formControlName="phone" id="phone" autocomplete="tel" class="block px-3 pb-2 pt-5 w-full text-sm text-gray-900 bg-white rounded-md border border-gray-300 appearance-none focus:outline-none focus:ring-0 focus:border-caramel-500 peer transition-colors" placeholder=" " />
+                  <label for="phone" class="absolute text-xs text-gray-500 duration-300 transform -translate-y-3 scale-75 top-4 z-10 origin-[0] start-3 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-3 peer-focus:text-caramel-600">Phone Number</label>
+                  <p *ngIf="checkoutForm.get('phone')?.invalid && checkoutForm.get('phone')?.touched" class="text-[10px] text-red-500 mt-1">Please enter a valid 10-digit mobile number.</p>
+                </div>
+              </div>
+
+              <ng-container *ngIf="!checkoutForm.value.isPickup">
+                <div class="relative mt-4">
+                  <input type="text" formControlName="pincode" id="pincode" autocomplete="postal-code" class="block px-3 pb-2 pt-5 w-full text-sm text-gray-900 bg-white rounded-md border border-gray-300 appearance-none focus:outline-none focus:ring-0 focus:border-caramel-500 peer transition-colors" placeholder=" " />
+                  <label for="pincode" class="absolute text-xs text-gray-500 duration-300 transform -translate-y-3 scale-75 top-4 z-10 origin-[0] start-3 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-3 peer-focus:text-caramel-600">Pincode (Delivery)</label>
+                  <p *ngIf="checkoutForm.get('pincode')?.invalid && checkoutForm.get('pincode')?.touched" class="text-[10px] text-red-500 mt-1">Must be a valid Bangalore pincode (e.g. 560001)</p>
+                </div>
+                <div class="relative mt-4">
+                  <textarea formControlName="address" id="address" autocomplete="street-address" rows="2" class="block px-3 pb-2 pt-5 w-full text-sm text-gray-900 bg-white rounded-md border border-gray-300 appearance-none focus:outline-none focus:ring-0 focus:border-caramel-500 peer transition-colors resize-none" placeholder=" "></textarea>
+                  <label for="address" class="absolute text-xs text-gray-500 duration-300 transform -translate-y-3 scale-75 top-4 z-10 origin-[0] start-3 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-3 peer-focus:text-caramel-600">Delivery Address</label>
+                  <p *ngIf="checkoutForm.get('address')?.errors?.['invalidAddress']" class="text-[10px] text-red-500 mt-1">Delivery is not possible to this address or at this time.</p>
+                  <p *ngIf="checkoutForm.hasError('pincodeMismatch') && checkoutForm.get('address')?.touched && checkoutForm.get('pincode')?.touched" class="text-[10px] text-red-500 mt-1">The pincode in the address does not match the pincode field.</p>
+                </div>
+                
+                <div class="pt-2">
+                  <h4 class="text-sm font-semibold text-gray-700 mb-2 pl-1">Delivery Options</h4>
+                  
+                  <div *ngIf="standardCost() === null" class="p-4 border border-gray-200 border-dashed rounded-lg bg-gray-50 text-center relative overflow-hidden transition-all duration-300">
+                     <p class="text-xs text-gray-500 font-medium">Enter your delivery address to see available delivery options.</p>
+                     <div *ngIf="calculatingShipping()" class="absolute inset-0 bg-gray-50/90 flex items-center justify-center">
+                       <svg class="animate-spin h-5 w-5 text-caramel-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                     </div>
+                  </div>
+
+                  <div *ngIf="standardCost() !== null" class="space-y-3 relative grid grid-cols-1 md:grid-cols-2 md:space-y-0 gap-3">
+                    <label class="flex flex-col items-start p-3 border rounded-lg cursor-pointer transition-all duration-200"
+                           [ngClass]="checkoutForm.value.deliveryType === 'standard' ? 'border-caramel-500 bg-caramel-50/50 shadow-sm ring-1 ring-caramel-500' : 'border-gray-200 bg-white hover:bg-gray-50'">
+                      <div class="flex items-start gap-2 w-full">
+                        <div class="relative flex items-center justify-center w-4 h-4 rounded-full border mt-0.5 shrink-0 transition-colors" [ngClass]="checkoutForm.value.deliveryType === 'standard' ? 'border-caramel-600' : 'border-gray-300'">
+                          <div class="w-2 h-2 rounded-full bg-caramel-600" *ngIf="checkoutForm.value.deliveryType === 'standard'"></div>
+                        </div>
+                        <div class="flex-1">
+                          <input type="radio" formControlName="deliveryType" value="standard" class="hidden">
+                          <span class="block text-sm font-semibold text-espresso-900 leading-tight">Same-Day Delivery</span>
+                          <span class="block text-[10px] text-gray-500 mt-0.5">Uber/Rapido (9 AM–8 PM)</span>
+                        </div>
+                        <span class="text-sm font-bold text-espresso-900 shrink-0">₹{{ standardCost() | number:'1.2-2' }}</span>
+                      </div>
+                    </label>
+
+                    <label class="flex flex-col items-start p-3 border rounded-lg transition-all duration-200"
+                           [class.pointer-events-none]="hasCreamBasedItems()"
+                           [class.cursor-not-allowed]="hasCreamBasedItems()"
+                           [class.opacity-50]="hasCreamBasedItems()"
+                           [class.cursor-pointer]="!hasCreamBasedItems()"
+                           [ngClass]="checkoutForm.value.deliveryType === 'courier' ? 'border-caramel-500 bg-caramel-50/50 shadow-sm ring-1 ring-caramel-500' : 'border-gray-200 bg-white hover:bg-gray-50'">
+                      <div class="flex items-start gap-2 w-full">
+                        <div class="relative flex items-center justify-center w-4 h-4 rounded-full border mt-0.5 shrink-0 transition-colors" [ngClass]="checkoutForm.value.deliveryType === 'courier' ? 'border-caramel-600' : 'border-gray-300'">
+                          <div class="w-2 h-2 rounded-full bg-caramel-600" *ngIf="checkoutForm.value.deliveryType === 'courier'"></div>
+                        </div>
+                        <div class="flex-1">
+                          <input type="radio" formControlName="deliveryType" value="courier" class="hidden">
+                          <span class="block text-sm font-semibold text-espresso-900 leading-tight">Standard Courier</span>
+                          <span class="block text-[10px] text-gray-500 mt-0.5">1–2 business days</span>
+                        </div>
+                        <span class="text-sm font-bold text-espresso-900 shrink-0">₹{{ courierCost() | number:'1.2-2' }}</span>
+                      </div>
+                    </label>
+                    
+                    <div *ngIf="calculatingShipping()" class="absolute inset-0 bg-white/60 backdrop-blur-[1px] flex items-center justify-center rounded-lg z-10 transition-opacity">
+                      <svg class="animate-spin h-6 w-6 text-caramel-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                    </div>
+                  </div>
+                </div>
+                
+                <div *ngIf="isLateForDelivery() && checkoutForm.value.deliveryType === 'standard'" class="mt-2 p-3 bg-amber-50 rounded-lg text-xs text-amber-800 border border-amber-100">
+                  <div class="flex gap-2">
+                    <svg class="w-4 h-4 shrink-0 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <div>
+                      <p class="font-semibold text-red-600">
+                        Note: It is currently past our same-day delivery window. Orders placed now will be delivered tomorrow morning.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </ng-container>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Side (Summary) -->
+      <div *ngIf="cartService.getItems().length > 0" class="w-full md:w-[360px] lg:w-[400px] flex flex-col bg-gray-50 shrink-0 border-t md:border-t-0 border-gray-200">
+        <!-- Order Items -->
+        <div class="p-4 md:p-5 md:overflow-y-auto flex-1">
+          <h3 class="text-base font-serif text-espresso-900 mb-4 pb-2 border-b border-gray-200">Order Summary</h3>
+          <div class="space-y-4">
+            <div *ngFor="let item of cartService.getItems()" class="flex gap-3 items-start">
+              <div class="relative shrink-0">
+                <img *ngIf="item.image" [src]="item.image" class="w-14 h-14 object-cover rounded bg-cream-50 border border-gray-200">
+                <div *ngIf="!item.image" class="w-14 h-14 bg-cream-100 rounded border border-gray-200 flex items-center justify-center text-caramel-300">
+                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                </div>
+              </div>
+              <div class="flex-1 min-w-0 pt-0.5">
+                <div class="flex justify-between items-start gap-2">
+                  <h4 class="font-semibold text-sm text-espresso-900 truncate">{{ item.name }}</h4>
+                  <div class="text-right shrink-0 leading-none">
+                    <p class="text-sm font-semibold text-gray-900">₹{{ item.price * item.quantity | number:'1.2-2' }}</p>
+                    <p class="text-[11px] text-gray-500 mt-1">Qty: {{ item.quantity }}</p>
+                  </div>
+                </div>
+                <p class="text-[11px] text-gray-500 uppercase tracking-wider truncate mt-0.5">{{ item.variantName }}</p>
+                <p *ngIf="item.customMessage" class="text-[11px] text-caramel-600 italic truncate mt-0.5">"{{ item.customMessage }}"</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Totals & Pay Button -->
+        <div class="p-4 md:p-5 bg-white border-t border-gray-200 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] shrink-0 sticky bottom-0 z-30">
+          <div *ngIf="checkoutForm.valid" class="space-y-2 mb-4">
+            <div class="flex justify-between text-sm text-gray-600">
+              <span>Subtotal</span>
+              <span class="font-medium text-gray-900">₹{{ cartService.totalPrice() | number:'1.2-2' }}</span>
+            </div>
+            <div class="flex justify-between text-sm text-gray-600" *ngIf="!checkoutForm.value.isPickup">
+              <span class="flex items-center gap-1">
+                Delivery 
+                <svg *ngIf="calculatingShipping()" class="animate-spin h-3 w-3 text-caramel-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+              </span>
+              <span class="font-medium text-gray-900">
+                <ng-container *ngIf="deliveryCost() > 0">₹{{ deliveryCost() | number:'1.2-2' }}</ng-container>
+                <ng-container *ngIf="deliveryCost() === 0 && checkoutForm.get('pincode')?.valid && !calculatingShipping()">₹0</ng-container>
+                <ng-container *ngIf="!checkoutForm.get('pincode')?.valid || (deliveryCost() === 0 && calculatingShipping())">-</ng-container>
+              </span>
+            </div>
+            <div class="flex justify-between items-end pt-3 border-t border-gray-100 mt-3">
+              <span class="text-xs font-medium uppercase tracking-wider text-gray-500">Total</span>
+              <span class="text-2xl font-serif text-espresso-900 font-bold leading-none">₹{{ cartService.totalPrice() + deliveryCost() | number:'1.2-2' }}</span>
+            </div>
+          </div>
+
+          <div *ngIf="verificationStatus() === 'sent'" class="mb-4 p-3 bg-blue-50 rounded-lg text-xs text-blue-800 border border-blue-200 flex items-start gap-2 shadow-sm animate-pulse">
+            <svg class="w-4 h-4 shrink-0 text-blue-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            <span>We've sent a verification link to your email. <strong>Check spam/junk!</strong></span>
+          </div>
+
+          <button (click)="processCheckout()" 
+                  [disabled]="checkoutForm.invalid || isProcessing() || verificationStatus() === 'sent' || verificationStatus() === 'sending'"
+                  class="w-full bg-espresso-900 text-white font-semibold py-3 rounded-md shadow hover:bg-caramel-600 focus:outline-none focus:ring-2 focus:ring-caramel-500 focus:ring-offset-2 transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed flex justify-center items-center gap-2 text-base">
+            <ng-container *ngIf="isProcessing() || verificationStatus() === 'sending'">
+              <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              <span *ngIf="verificationStatus() === 'sending'">Sending Verification...</span>
+              <span *ngIf="isProcessing() && verificationStatus() !== 'sending'">Processing Payment...</span>
+            </ng-container>
+
+            <ng-container *ngIf="verificationStatus() === 'sent' && !isProcessing()">
+              <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              <span>Waiting Verification...</span>
+            </ng-container>
+
+            <ng-container *ngIf="!isProcessing() && verificationStatus() !== 'sending' && verificationStatus() !== 'sent'">
+              <span class="flex items-center gap-1">
+                {{ checkoutForm.valid ? 'Place Order & Pay ₹' + (cartService.totalPrice() + deliveryCost() | number:'1.2-2') : 'Complete Details to Checkout' }}
+                <svg *ngIf="checkoutForm.valid" class="w-5 h-5 ml-1 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+              </span>
+            </ng-container>
+          </button>
+          <p class="text-[10px] text-gray-400 text-center mt-3 flex items-center justify-center gap-1.5 uppercase font-medium tracking-wide">
+            <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+            Secure checkout powered by Razorpay
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<ng-template #emptyCart>
+  <div class="flex flex-col items-center justify-center text-gray-500 py-12 space-y-4">
+    <svg class="w-16 h-16 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+    <p class="font-medium">Your cart is empty</p>
+    <a routerLink="/" class="text-caramel-600 font-semibold hover:text-caramel-700">Continue Shopping</a>
+  </div>
+</ng-template>
