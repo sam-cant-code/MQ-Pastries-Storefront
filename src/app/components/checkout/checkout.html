@@ -76,7 +76,15 @@
               </div>
 
               <ng-container *ngIf="!checkoutForm.value.isPickup">
-                <div class="relative mt-4">
+                <div class="flex items-center justify-between mt-4">
+                  <h4 class="text-sm font-semibold text-gray-700 pl-1">Delivery Address</h4>
+                  <button type="button" (click)="useCurrentLocation()" [disabled]="locatingAddress()" class="text-xs font-medium text-caramel-600 hover:text-caramel-700 flex items-center gap-1 transition-colors disabled:opacity-50">
+                    <svg *ngIf="!locatingAddress()" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                    <svg *ngIf="locatingAddress()" class="animate-spin h-3.5 w-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                    {{ locatingAddress() ? 'Locating...' : 'Use Current Location' }}
+                  </button>
+                </div>
+                <div class="relative mt-2">
                   <input type="text" formControlName="pincode" id="pincode" autocomplete="postal-code" class="block px-3 pb-2 pt-5 w-full text-sm text-gray-900 bg-white rounded-md border border-gray-300 appearance-none focus:outline-none focus:ring-0 focus:border-caramel-500 peer transition-colors" placeholder=" " />
                   <label for="pincode" class="absolute text-xs text-gray-500 duration-300 transform -translate-y-3 scale-75 top-4 z-10 origin-[0] start-3 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-3 peer-focus:text-caramel-600">Pincode (Delivery)</label>
                   <p *ngIf="checkoutForm.get('pincode')?.invalid && checkoutForm.get('pincode')?.touched" class="text-[10px] text-red-500 mt-1">Must be a valid Bangalore pincode (e.g. 560001)</p>
@@ -107,10 +115,16 @@
                         </div>
                         <div class="flex-1">
                           <input type="radio" formControlName="deliveryType" value="standard" class="hidden">
-                          <span class="block text-sm font-semibold text-espresso-900 leading-tight">Same-Day Delivery</span>
-                          <span class="block text-[10px] text-gray-500 mt-0.5">Uber/Rapido (9 AM–8 PM)</span>
+                          <span class="block text-sm font-semibold text-espresso-900 leading-tight">Standard Delivery</span>
+                          <span class="block text-[10px] text-gray-500 mt-0.5">Uber/Rapido ({{ isLateForDelivery() ? 'Next Day Window' : '9 AM–8 PM' }})</span>
                         </div>
-                        <span class="text-sm font-bold text-espresso-900 shrink-0">₹{{ standardCost() | number:'1.2-2' }}</span>
+                        <div class="flex flex-col items-end shrink-0">
+                          <span *ngIf="isTestOrder()" class="text-xs text-gray-400 line-through">₹{{ originalStandardCost() | number:'1.2-2' }}</span>
+                          <span class="text-sm font-bold" [ngClass]="isTestOrder() ? 'text-green-600' : 'text-espresso-900'">
+                            <ng-container *ngIf="isTestOrder(); else showStdCost">FREE</ng-container>
+                            <ng-template #showStdCost>₹{{ standardCost() | number:'1.2-2' }}</ng-template>
+                          </span>
+                        </div>
                       </div>
                     </label>
 
@@ -129,7 +143,13 @@
                           <span class="block text-sm font-semibold text-espresso-900 leading-tight">Standard Courier</span>
                           <span class="block text-[10px] text-gray-500 mt-0.5">1–2 business days</span>
                         </div>
-                        <span class="text-sm font-bold text-espresso-900 shrink-0">₹{{ courierCost() | number:'1.2-2' }}</span>
+                        <div class="flex flex-col items-end shrink-0">
+                          <span *ngIf="isTestOrder()" class="text-xs text-gray-400 line-through">₹{{ originalCourierCost() | number:'1.2-2' }}</span>
+                          <span class="text-sm font-bold" [ngClass]="isTestOrder() ? 'text-green-600' : 'text-espresso-900'">
+                            <ng-container *ngIf="isTestOrder(); else showCourierCost">FREE</ng-container>
+                            <ng-template #showCourierCost>₹{{ courierCost() | number:'1.2-2' }}</ng-template>
+                          </span>
+                        </div>
                       </div>
                     </label>
                     
@@ -144,7 +164,7 @@
                     <svg class="w-4 h-4 shrink-0 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                     <div>
                       <p class="font-semibold text-red-600">
-                        Note: It is currently past our same-day delivery window. Orders placed now will be delivered tomorrow morning.
+                        Note: It is currently past our same-day delivery window. Orders placed now will be delivered in the next day's window.
                       </p>
                     </div>
                   </div>
@@ -195,10 +215,16 @@
                 Delivery 
                 <svg *ngIf="calculatingShipping()" class="animate-spin h-3 w-3 text-caramel-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
               </span>
-              <span class="font-medium text-gray-900">
-                <ng-container *ngIf="deliveryCost() > 0">₹{{ deliveryCost() | number:'1.2-2' }}</ng-container>
-                <ng-container *ngIf="deliveryCost() === 0 && checkoutForm.get('pincode')?.valid && !calculatingShipping()">₹0</ng-container>
-                <ng-container *ngIf="!checkoutForm.get('pincode')?.valid || (deliveryCost() === 0 && calculatingShipping())">-</ng-container>
+              <span class="font-medium flex flex-col items-end">
+                <ng-container *ngIf="isTestOrder()">
+                   <span class="text-xs text-gray-400 line-through">₹{{ (checkoutForm.value.deliveryType === 'courier' ? originalCourierCost() : originalStandardCost()) | number:'1.2-2' }}</span>
+                   <span class="text-green-600 font-bold">FREE</span>
+                </ng-container>
+                <ng-container *ngIf="!isTestOrder()">
+                  <ng-container *ngIf="deliveryCost() > 0">₹{{ deliveryCost() | number:'1.2-2' }}</ng-container>
+                  <ng-container *ngIf="deliveryCost() === 0 && checkoutForm.get('pincode')?.valid && !calculatingShipping()">₹0</ng-container>
+                  <ng-container *ngIf="!checkoutForm.get('pincode')?.valid || (deliveryCost() === 0 && calculatingShipping())">-</ng-container>
+                </ng-container>
               </span>
             </div>
             <div class="flex justify-between items-end pt-3 border-t border-gray-100 mt-3">

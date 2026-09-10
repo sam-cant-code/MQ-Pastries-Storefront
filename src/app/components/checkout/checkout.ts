@@ -31,6 +31,10 @@ export class Checkout implements OnInit, OnDestroy {
   
   standardCost = signal<number | null>(null);
   courierCost = signal<number | null>(null);
+  originalStandardCost = signal<number | null>(null);
+  originalCourierCost = signal<number | null>(null);
+  isTestOrder = signal<boolean>(false);
+  locatingAddress = signal<boolean>(false);
   private lastCalculatedPincode = '';
   private lastCalculatedAddress = '';
 
@@ -137,11 +141,11 @@ export class Checkout implements OnInit, OnDestroy {
       variantName: item.variantName
     }));
 
-    const reqStandard = this.http.post<{shippingCost: number}>(`${environment.apiUrl}/public/orders/calculate-shipping`, {
+    const reqStandard = this.http.post<{shippingCost: number, originalCost?: number, isTestOrder?: boolean}>(`${environment.apiUrl}/public/orders/calculate-shipping`, {
       pincode, address, deliveryType: 'standard', items
     });
     
-    const reqCourier = this.http.post<{shippingCost: number}>(`${environment.apiUrl}/public/orders/calculate-shipping`, {
+    const reqCourier = this.http.post<{shippingCost: number, originalCost?: number, isTestOrder?: boolean}>(`${environment.apiUrl}/public/orders/calculate-shipping`, {
       pincode, address, deliveryType: 'courier', items
     });
 
@@ -153,6 +157,10 @@ export class Checkout implements OnInit, OnDestroy {
         this.standardCost.set(res.standard.shippingCost);
         this.courierCost.set(res.courier.shippingCost);
         
+        this.originalStandardCost.set(res.standard.originalCost ?? null);
+        this.originalCourierCost.set(res.courier.originalCost ?? null);
+        this.isTestOrder.set(res.standard.isTestOrder ?? false);
+        
         const type = this.checkoutForm.get('deliveryType')?.value || 'standard';
         this.deliveryCost.set(type === 'courier' ? res.courier.shippingCost : res.standard.shippingCost);
         
@@ -162,6 +170,9 @@ export class Checkout implements OnInit, OnDestroy {
       error: (err) => {
         this.standardCost.set(null);
         this.courierCost.set(null);
+        this.originalStandardCost.set(null);
+        this.originalCourierCost.set(null);
+        this.isTestOrder.set(false);
         this.deliveryCost.set(0);
         this.calculatingShipping.set(false);
         const errorMsg = err.error?.error || 'Invalid address or delivery not possible.';
@@ -177,6 +188,54 @@ export class Checkout implements OnInit, OnDestroy {
     if (this.verificationInterval) {
       clearInterval(this.verificationInterval);
     }
+  }
+
+  useCurrentLocation() {
+    if (!navigator.geolocation) {
+      this.cartService.showToast('Geolocation is not supported by your browser.', 'Error');
+      return;
+    }
+
+    this.locatingAddress.set(true);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const lat = position.coords.latitude;
+        const lon = position.coords.longitude;
+        
+        this.http.get<any>(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`)
+          .subscribe({
+            next: (res) => {
+              this.locatingAddress.set(false);
+              if (res && res.address) {
+                const addressStr = res.display_name;
+                const postcode = res.address.postcode;
+                
+                this.checkoutForm.patchValue({
+                  address: addressStr || ''
+                });
+                if (postcode) {
+                  this.checkoutForm.patchValue({ pincode: postcode });
+                }
+              } else {
+                this.cartService.showToast('Could not determine address from location.', 'Error');
+              }
+            },
+            error: () => {
+              this.locatingAddress.set(false);
+              this.cartService.showToast('Failed to fetch address from location.', 'Error');
+            }
+          });
+      },
+      (error) => {
+        this.locatingAddress.set(false);
+        if (error.code === error.PERMISSION_DENIED) {
+          this.cartService.showToast('Location access denied. Please type your address manually.', 'Info');
+        } else {
+          this.cartService.showToast('Could not get your location.', 'Error');
+        }
+      },
+      { timeout: 10000, enableHighAccuracy: true }
+    );
   }
 
   async processCheckout() {
