@@ -5,7 +5,8 @@ import { HttpClient } from '@angular/common/http';
 import { Router, RouterModule } from '@angular/router';
 import { CartService } from '../../services/cart.service';
 import { environment } from '../../../environments/environment';
-import { forkJoin } from 'rxjs';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
 declare var Razorpay: any;
 
@@ -59,9 +60,9 @@ export class Checkout implements OnInit, OnDestroy {
       deliveryType: ['standard'],
       customerName: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
-      phone: ['', [Validators.required, Validators.pattern('^[0-9]{10}$')]],
+      phone: ['+91 ', [Validators.required, Validators.pattern('^(\\+91\\s?)?[0-9]{10}$')]],
       address: ['', Validators.required],
-      pincode: ['', [Validators.required, Validators.pattern('^56[0-9]{4}$')]]
+      pincode: ['', [Validators.required, Validators.pattern('^[1-9][0-9]{5}$')]]
     }, { validators: this.addressPincodeValidator });
 
     this.checkoutForm.get('isPickup')?.valueChanges.subscribe(isPickup => {
@@ -70,7 +71,7 @@ export class Checkout implements OnInit, OnDestroy {
         this.checkoutForm.get('pincode')?.clearValidators();
       } else {
         this.checkoutForm.get('address')?.setValidators([Validators.required]);
-        this.checkoutForm.get('pincode')?.setValidators([Validators.required, Validators.pattern('^56[0-9]{4}$')]);
+        this.checkoutForm.get('pincode')?.setValidators([Validators.required, Validators.pattern('^[1-9][0-9]{5}$')]);
       }
       this.checkoutForm.get('address')?.updateValueAndValidity();
       this.checkoutForm.get('pincode')?.updateValueAndValidity();
@@ -79,8 +80,6 @@ export class Checkout implements OnInit, OnDestroy {
     this.checkoutForm.valueChanges.subscribe(val => {
       if (val.isPickup) {
         this.deliveryCost.set(0);
-        this.standardCost.set(null);
-        this.courierCost.set(null);
         return;
       }
       
@@ -134,35 +133,86 @@ export class Checkout implements OnInit, OnDestroy {
     this.lastCalculatedAddress = address;
 
     this.calculatingShipping.set(true);
-    
-    const items = this.cartService.getItems().map(item => ({
-      productId: item.productId,
-      quantity: item.quantity,
-      variantName: item.variantName
-    }));
 
-    const reqStandard = this.http.post<{shippingCost: number, originalCost?: number, isTestOrder?: boolean}>(`${environment.apiUrl}/public/orders/calculate-shipping`, {
+    this.http.get<any[]>(`https://api.postalpincode.in/pincode/${pincode}`).subscribe({
+      next: (pinRes) => {
+        if (!pinRes || !pinRes[0] || pinRes[0].Status !== 'Success') {
+          this.standardCost.set(null);
+          this.courierCost.set(null);
+          this.deliveryCost.set(0);
+          this.calculatingShipping.set(false);
+          this.cartService.showToast('This pincode does not appear to exist in India.', 'Error');
+          this.checkoutForm.get('pincode')?.setErrors({ invalidPincode: true });
+          this.lastCalculatedPincode = '';
+          this.lastCalculatedAddress = '';
+          return;
+        }
+
+        const state = pinRes[0].PostOffice[0].State;
+        const supportedStates = ['Karnataka', 'Tamil Nadu', 'Andhra Pradesh', 'Telangana', 'Kerala', 'Puducherry'];
+        
+        if (!supportedStates.includes(state)) {
+          this.standardCost.set(null);
+          this.courierCost.set(null);
+          this.deliveryCost.set(0);
+          this.calculatingShipping.set(false);
+          this.cartService.showToast(`Sorry, we currently do not deliver to ${state}. Supported states: Karnataka, Tamil Nadu, Andhra Pradesh, Telangana, Kerala, Puducherry.`, 'Error');
+          this.checkoutForm.get('pincode')?.setErrors({ unsupportedState: true });
+          this.lastCalculatedPincode = '';
+          this.lastCalculatedAddress = '';
+          return;
+        }
+
+        const items = this.cartService.getItems().map(item => ({
+          productId: item.productId,
+          quantity: item.quantity,
+          variantName: item.variantName
+        }));
+
+    const reqStandard = this.http.post<{shippingCost: number, originalCost?: number, isTestOrder?: boolean}>(`${environment.apiUrl}/public/orders/delivery-cost`, {
       pincode, address, deliveryType: 'standard', items
-    });
+    }).pipe(catchError(err => of(null)));
     
-    const reqCourier = this.http.post<{shippingCost: number, originalCost?: number, isTestOrder?: boolean}>(`${environment.apiUrl}/public/orders/calculate-shipping`, {
+    const reqCourier = this.http.post<{shippingCost: number, originalCost?: number, isTestOrder?: boolean}>(`${environment.apiUrl}/public/orders/delivery-cost`, {
       pincode, address, deliveryType: 'courier', items
-    });
+    }).pipe(catchError(err => of(null)));
 
     forkJoin({
       standard: reqStandard,
       courier: reqCourier
     }).subscribe({
       next: (res) => {
-        this.standardCost.set(res.standard.shippingCost);
-        this.courierCost.set(res.courier.shippingCost);
+        if (!res.standard && !res.courier) {
+          // Both failed
+          this.standardCost.set(null);
+          this.courierCost.set(null);
+          this.deliveryCost.set(0);
+          this.calculatingShipping.set(false);
+          this.cartService.showToast('Invalid address or delivery not possible.', 'Error');
+          this.checkoutForm.get('address')?.setErrors({ invalidAddress: true });
+          this.lastCalculatedAddress = '';
+          this.lastCalculatedPincode = '';
+          return;
+        }
+
+        this.standardCost.set(res.standard?.shippingCost ?? null);
+        this.courierCost.set(res.courier?.shippingCost ?? null);
         
-        this.originalStandardCost.set(res.standard.originalCost ?? null);
-        this.originalCourierCost.set(res.courier.originalCost ?? null);
-        this.isTestOrder.set(res.standard.isTestOrder ?? false);
+        this.originalStandardCost.set(res.standard?.originalCost ?? null);
+        this.originalCourierCost.set(res.courier?.originalCost ?? null);
+        this.isTestOrder.set(res.standard?.isTestOrder ?? res.courier?.isTestOrder ?? false);
         
-        const type = this.checkoutForm.get('deliveryType')?.value || 'standard';
-        this.deliveryCost.set(type === 'courier' ? res.courier.shippingCost : res.standard.shippingCost);
+        // Auto-select courier if standard is unavailable, unless they have cream based items
+        let type = this.checkoutForm.get('deliveryType')?.value || 'standard';
+        if (!res.standard && res.courier && type === 'standard' && !this.hasCreamBasedItems()) {
+          type = 'courier';
+          this.checkoutForm.patchValue({ deliveryType: 'courier' }, { emitEvent: false });
+        } else if (!res.courier && type === 'courier') {
+          type = 'standard';
+          this.checkoutForm.patchValue({ deliveryType: 'standard' }, { emitEvent: false });
+        }
+
+        this.deliveryCost.set(type === 'courier' ? (res.courier?.shippingCost ?? 0) : (res.standard?.shippingCost ?? 0));
         
         this.calculatingShipping.set(false);
         this.checkoutForm.get('address')?.setErrors(null);
@@ -179,6 +229,13 @@ export class Checkout implements OnInit, OnDestroy {
         this.cartService.showToast(errorMsg, 'Error');
         this.checkoutForm.get('address')?.setErrors({ invalidAddress: true });
         this.lastCalculatedAddress = ''; // Allow retry
+        this.lastCalculatedPincode = '';
+      }
+    });
+      },
+      error: () => {
+        this.calculatingShipping.set(false);
+        this.cartService.showToast('Unable to verify pincode at this time.', 'Error');
         this.lastCalculatedPincode = '';
       }
     });
@@ -241,7 +298,7 @@ export class Checkout implements OnInit, OnDestroy {
   async processCheckout() {
     if (this.checkoutForm.invalid || this.cartService.getItems().length === 0) {
       if (!this.checkoutForm.value.isPickup && this.checkoutForm.controls['pincode'].errors?.['pattern']) {
-        this.cartService.showToast('Sorry, we currently only deliver within Bangalore (Pincode 56xxxx).', 'Error');
+        this.cartService.showToast('Please enter a valid 6-digit Indian pincode.', 'Error');
       }
       return;
     }

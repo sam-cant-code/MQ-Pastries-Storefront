@@ -17,3 +17,24 @@
 html {
   scroll-behavior: smooth;
 }
+
+@layer utilities {
+  .scrollbar-subtle::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  .scrollbar-subtle::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .scrollbar-subtle::-webkit-scrollbar-thumb {
+    @apply bg-gray-200 rounded-full;
+  }
+  .scrollbar-subtle::-webkit-scrollbar-thumb:hover {
+    @apply bg-gray-300;
+  }
+  /* For Firefox */
+  .scrollbar-subtle {
+    scrollbar-width: thin;
+    scrollbar-color: theme('colors.gray.200') transparent;
+  }
+}
